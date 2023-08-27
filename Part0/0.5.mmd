@@ -1,0 +1,17 @@
+sequenceDiagram
+    Actor Browser
+    Actor Server
+    Browser->>Server: Requests spa document via GET method
+    Server-->>Browser: Sends spa document with 200 response
+    Note right of Browser: Browser begins parsing spa document
+    Browser->>Browser: Encounters stylesheet reference in spa document
+    Browser->>Server: Requests main.css via GET method
+    Server-->>Browser: Sends main.css with 200 response
+    Browser->>Browser: Encounters javascript reference in spa document
+    Browser->>Server: Requests spa.js via GET method
+    Server-->>Browser: Sends spa.js with 200 response
+    Note right of Browser: Browser begins executing code in spa.js
+    Browser->>Browser: Encounters data.json reference in spa.js
+    Browser->>Server: Requests data.json via GET method
+    Server-->>Browser: Sends data.json with 200 response
+    Browser->>Browser: Populates notes with json data
