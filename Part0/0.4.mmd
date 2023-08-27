@@ -1,0 +1,20 @@
+sequenceDiagram
+    Actor Browser
+    Actor Server
+    Browser->>Server: Sends form data to server via POST method
+    Server-->>Server: Updates server-side note data
+    Server-->>Browser: Sends 302 response code, redirect to notes address
+    Browser->>Server: Requests notes document again via GET method
+    Server-->>Browser: Sends notes document with 200 response
+    Note right of Browser: Browser begins parsing notes document
+    Browser->>Browser: Encounters stylesheet reference in notes document
+    Browser->>Server: Requests main.css via GET method
+    Server-->>Browser: Sends main.css with 200 response
+    Browser->>Browser: Encounters javascript reference in notes document
+    Browser->>Server: Requests main.js via GET method
+    Server-->>Browser: Sends main.js with 200 response
+    Note right of Browser: Browser begins executing code in main.js
+    Browser->>Browser: Encounters data.json reference in main.js
+    Browser->>Server: Requests data.json via GET method
+    Server-->>Browser: Sends data.json with 200 response
+    Browser->>Browser: Populates notes with json data
