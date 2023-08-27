@@ -1,0 +1,9 @@
+sequenceDiagram
+    Actor Browser
+    Actor Server
+    Note right of Browser: User submits new note
+    Browser->>Browser: Adds new note to list
+    Browser->>Server: Sends form data to server via POST method
+    Server-->>Server: Updates server-side note data
+    Server-->>Browser: Sends 201 response with message "note created"
+    Note right of Browser: No additional HTTP requests are sent
