@@ -74,14 +74,14 @@ const App = () => {
   const [bad, setBad] = useState(0)
   const [selected, setSelected] = useState(0)
   // click handler logic
-  const generateHandleClick = (feedbackType, setterFunc) => () => {
-    console.log(`The 'setFeedback' function is being called with feedback of '${feedbackType}'`)
-    setterFunc(prevCount => prevCount + 1)
+  const generateHandleClick = (prevCount, setterFunc) => () => {
+    const newCount = prevCount + 1
+    setterFunc(newCount)
   }
 
-  const handleGoodClick = generateHandleClick("good", setGood)
-  const handleNeutralClick = generateHandleClick("neutral", setNeutral)
-  const handleBadClick = generateHandleClick("bad", setBad)
+  const handleGoodClick = generateHandleClick(good, setGood)
+  const handleNeutralClick = generateHandleClick(neutral, setNeutral)
+  const handleBadClick = generateHandleClick(bad, setBad)
 
   const handleAnecdoteClick = () => {
     const rand = Math.floor(Math.random() * anecdotes.length)
