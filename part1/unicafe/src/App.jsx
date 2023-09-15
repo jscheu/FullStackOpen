@@ -5,9 +5,9 @@ const statisticsTitle = 'statistics'
 
 const Header = ({title}) => <h1>{title}</h1>
 
-const Button = ({text}) => {
+const Button = ({text, handleClick}) => {
   return (
-    <button>{text}</button>
+    <button onClick={handleClick}>{text}</button>
   )
 }
 
@@ -23,13 +23,22 @@ const App = () => {
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
 
+  const generateHandleClick = (feedbackType, setterFunc) => () => {
+    console.log(`The 'setFeedback' function is being called with feedback of '${feedbackType}'`)
+    setterFunc(prevCount => prevCount + 1)
+  }
+
+  const handleGoodClick = generateHandleClick("good", setGood)
+  const handleNeutralClick = generateHandleClick("neutral", setNeutral)
+  const handleBadClick = generateHandleClick("bad", setBad)
+
   return (
     <div>
       <div>
         <Header title={inputTitle}/>
-        <Button text="good" />
-        <Button text="neutral" />
-        <Button text="bad" />
+        <Button text="good" handleClick={handleGoodClick} />
+        <Button text="neutral" handleClick={handleNeutralClick} />
+        <Button text="bad" handleClick={handleBadClick} />
       </div>
       <div>
         <Header title={statisticsTitle}/>
