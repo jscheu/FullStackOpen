@@ -23,21 +23,28 @@ const Statistic = ({type, name, value}) => {
 const Statistics = ({good, neutral, bad}) => {
   const total = good + neutral + bad
 
-  const average = total === 0 ? 0 : (good - bad)/total
+  if(total > 0) {
+    const average = total === 0 ? 0 : (good - bad)/total
 
-  const percPositive = total === 0 ? 0 : (100 * good)/total
+    const percPositive = total === 0 ? 0 : (100 * good)/total
 
-  return (
+    return (
+      <div>
+          <Header title={statisticsTitle} />
+          <Statistic name="good" value={good} />
+          <Statistic name="neutral" value={neutral} />
+          <Statistic name="bad" value={bad} />
+          <Statistic name="all" value={total} />
+          <Statistic name="average" value={average} />
+          <Statistic type="percent" name="positive" value={percPositive} />
+
+        </div>
+    )
+  } else return (
     <div>
-        <Header title={statisticsTitle}/>
-        <Statistic name="good" value={good}/>
-        <Statistic name="neutral" value={neutral}/>
-        <Statistic name="bad" value={bad}/>
-        <Statistic name="all" value={total} />
-        <Statistic name="average" value={average} />
-        <Statistic type="percent" name="positive" value={percPositive} />
-
-      </div>
+      <Header title={statisticsTitle} />
+      <p>No feedback given</p>
+    </div>
   )
 }
 
