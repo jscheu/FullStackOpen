@@ -73,6 +73,7 @@ const App = () => {
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
   const [selected, setSelected] = useState(0)
+  const [points, setPoints] = useState([0, 0, 0, 0, 0, 0, 0, 0])
   // click handler logic
   const generateHandleClick = (prevCount, setterFunc) => () => {
     const newCount = prevCount + 1
@@ -88,6 +89,12 @@ const App = () => {
     setSelected(rand)
   }
 
+  const handleVoteClick = (voted) => {
+    const newPoints = [...points]
+    newPoints[voted] += 1
+    setPoints(newPoints)
+  }
+
   return (
     <div>
       <div>
@@ -99,6 +106,8 @@ const App = () => {
       <Statistics good={good} neutral={neutral} bad={bad} />
       <div>
         <p>{anecdotes[selected]}</p>
+        <p>has {points[selected]} votes</p>
+        <Button text="vote" handleClick={() => handleVoteClick(selected)} />
         <Button text="next anecdote" handleClick={handleAnecdoteClick}/>
       </div>
     </div>
