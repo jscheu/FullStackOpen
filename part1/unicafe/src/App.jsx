@@ -95,6 +95,16 @@ const App = () => {
     setPoints(newPoints)
   }
 
+  let maxIndex = 0;
+  let maxValue = points[0]
+
+  for (let i = 1; i < points.length; i++) {
+    if (points[i] > maxValue) {
+      maxValue = points[i]
+      maxIndex = i
+    }
+  }
+
   return (
     <div>
       <div>
@@ -105,10 +115,14 @@ const App = () => {
       </div>
       <Statistics good={good} neutral={neutral} bad={bad} />
       <div>
+        <Header title="Anecdote of the day" />
         <p>{anecdotes[selected]}</p>
         <p>has {points[selected]} votes</p>
         <Button text="vote" handleClick={() => handleVoteClick(selected)} />
         <Button text="next anecdote" handleClick={handleAnecdoteClick}/>
+        <Header title="Anecdote with most votes" />
+        <p>{anecdotes[maxIndex]}</p>
+        <p>has {maxValue} votes</p>
       </div>
     </div>
   )
