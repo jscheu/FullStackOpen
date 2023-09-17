@@ -25,17 +25,7 @@ const NewPersonForm = ({ newName, newNumber, addPerson, handleNameChange, handle
   )
 }
 
-const ContactList = ({ persons }) => {
-  const deletePerson = (id, name) => {
-    const result = window.confirm(`Delete ${name}?`)
-
-    if(result) {
-      //delete from server
-    } else {
-      //do not delete
-    }
-  }
-
+const ContactList = ({ persons, deletePerson }) => {
   return (
     <>
       {persons.map(person =>
@@ -69,8 +59,19 @@ const App = () => {
       number: newNumber
     }
 
-    if (persons.some(person => person.name === newPerson.name)) {
-      alert(`${newPerson.name} is already added to phonebook`)
+    const existingPerson = persons.find(person => person.name === newPerson.name)
+
+    if (existingPerson) {
+      const result = window.confirm(`${newPerson.name} is already added to phonebook, replace the old number with a new one?`)
+
+      if(result) {
+        personService
+          .update(existingPerson.id, newPerson)
+          .then(() => {
+            newPerson['id'] = existingPerson.id
+            setPersons(persons.map(person => (person.id === newPerson.id ? newPerson : person)))
+          })
+      }
     } else {
       personService
         .create(newPerson)
@@ -79,6 +80,16 @@ const App = () => {
           setNewName('enter name...')
           setNewNumber('enter number...')
         })
+    }
+  }
+
+  const deletePerson = (id, name) => {
+    const result = window.confirm(`Delete ${name}?`)
+
+    if(result) {
+      personService
+        .remove(id)
+        .then(() => setPersons(persons.filter(person => person.id !== id)))
     }
   }
 
@@ -106,7 +117,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h3>Numbers</h3>
-      <ContactList persons={filteredPersons} />
+      <ContactList persons={filteredPersons} deletePerson={deletePerson} />
     </div>
   )
 }
