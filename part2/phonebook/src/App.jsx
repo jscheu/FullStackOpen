@@ -1,6 +1,20 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons'
 
+import './index.css'
+
+const Notification = ({ message }) => {
+  if(!message) {
+    return null
+  }
+
+  return (
+    <div className='notification'>
+      {message}
+    </div>
+  )
+}
+
 const Filter = ({ filter, handleFilterChange }) => {
   return (
     <div>
@@ -43,6 +57,7 @@ const App = () => {
   const [newName, setNewName] = useState('enter name...')
   const [newNumber, setNewNumber] = useState('enter number...')
   const [filter, setFilter] = useState('')
+  const [updateMessage, setUpdateMessage] = useState()
 
   useEffect(() => {
     personService
@@ -70,6 +85,10 @@ const App = () => {
           .then(() => {
             newPerson['id'] = existingPerson.id
             setPersons(persons.map(person => (person.id === newPerson.id ? newPerson : person)))
+            setUpdateMessage(`Updated ${newPerson.name}`)
+            setTimeout(() => {
+              setUpdateMessage(null)
+            }, 5000)
           })
       }
     } else {
@@ -79,6 +98,10 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('enter name...')
           setNewNumber('enter number...')
+          setUpdateMessage(`Added ${returnedPerson.name}`)
+          setTimeout(() => {
+            setUpdateMessage(null)
+          }, 5000)
         })
     }
   }
@@ -89,7 +112,13 @@ const App = () => {
     if(result) {
       personService
         .remove(id)
-        .then(() => setPersons(persons.filter(person => person.id !== id)))
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id))
+          setUpdateMessage(`Deleted ${name}`)
+          setTimeout(() => {
+            setUpdateMessage(null)
+          }, 5000)
+        })
     }
   }
 
@@ -107,6 +136,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={updateMessage} />
       <Filter filter={filter} handleFilterChange={handleFilterChange} />
       <h3>add a new</h3>
       <NewPersonForm
