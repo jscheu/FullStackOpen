@@ -14,7 +14,7 @@ const CountriesList = ({ countries }) => {
   } else {
     return (
       <ul>
-        {countries.map((country, index) => <li key={index}>{country}</li>)}
+        {countries.map((country, index) => <li key={index}>{country}<button>show</button></li>)}
       </ul>
     )
   }
@@ -22,8 +22,6 @@ const CountriesList = ({ countries }) => {
 
 const CountryDetails = ({ country }) => {
   if(!country) return null
-  console.log(country)
-  console.log(country.languages)
 
   return (
     <>
@@ -47,10 +45,15 @@ function App() {
   const allUrl = 'https://studies.cs.helsinki.fi/restcountries/api/all'
   const [countries, setCountries] = useState(null)
   const [filter, setFilter] = useState('')
+  const [shownCountry, setShownCountry] = useState(null)
+
+  console.log('render')
 
   const filteredCountries = (countries && filter)
     ? countries.filter((country) => country.name.common.toLowerCase().includes(filter.toLowerCase()))
     : null
+
+  if(!shownCountry && filteredCountries && filteredCountries.length === 1) setShownCountry(filteredCountries[0])
   
   const singleCountry = (filteredCountries && filteredCountries.length === 1)
     ? filteredCountries[0]
@@ -61,7 +64,7 @@ function App() {
     axios
       .get(allUrl)
       .then(response => {
-        setCountries(response.data)
+        setCountries(response.data.map((country, index) => ({...country, originalIndex: index})))
       })
   }, [])
 
@@ -81,7 +84,7 @@ function App() {
             filteredCountries
             ? filteredCountries.map(country => country.name.common)
             : null} />
-        <CountryDetails country={singleCountry} />
+        <CountryDetails country={shownCountry} />
       </div>
     </>
   )
