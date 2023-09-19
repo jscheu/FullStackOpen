@@ -3,6 +3,7 @@ import axios from 'axios'
 
 const CountriesList = ({ countries }) => {
   if(!countries) return null
+  if(countries.length === 1) return null
 
   if(countries.length > 10) {
     return (
@@ -19,6 +20,29 @@ const CountriesList = ({ countries }) => {
   }
 }
 
+const CountryDetails = ({ country }) => {
+  if(!country) return null
+  console.log(country)
+  console.log(country.languages)
+
+  return (
+    <>
+      <h2>
+        {country.name.common}
+      </h2>
+      {country.capital.map((capital, index) => <p key={index}>capital {capital}</p>)}
+      <p>area {country.area}</p>
+      <h3>
+        languages:
+      </h3>
+      <ul>
+        {Object.values(country.languages).map(language => <li key={language}>{language}</li>)}
+      </ul>
+      <img alt={country.flags.alt} src={country.flags.png}/>
+    </>
+  )
+}
+
 function App() {
   const allUrl = 'https://studies.cs.helsinki.fi/restcountries/api/all'
   const [countries, setCountries] = useState(null)
@@ -26,6 +50,10 @@ function App() {
 
   const filteredCountries = (countries && filter)
     ? countries.filter((country) => country.name.common.toLowerCase().includes(filter.toLowerCase()))
+    : null
+  
+  const singleCountry = (filteredCountries && filteredCountries.length === 1)
+    ? filteredCountries[0]
     : null
 
   useEffect(() => {
@@ -53,6 +81,7 @@ function App() {
             filteredCountries
             ? filteredCountries.map(country => country.name.common)
             : null} />
+        <CountryDetails country={singleCountry} />
       </div>
     </>
   )
