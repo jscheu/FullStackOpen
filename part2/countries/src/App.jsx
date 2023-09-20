@@ -4,13 +4,45 @@ import axios from 'axios'
 const CountriesList = ({ countries, showCountry }) => {
   return (
     <ul>
-      {countries.map((country, index) => <li key={index}>{country.name.common}<button onClick={() => showCountry(country)}>show</button></li>)}
+      {countries.map((country, index) => <li key={index}>{country.name.common} {country.originalIndex}<button onClick={() => showCountry(country)}>show</button></li>)}
     </ul>
   )
 }
 
+const CurrentWeather = ({ city, lat, lon }) => {
+  const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${import.meta.env.VITE_API_KEY}&units=metric`
+
+  const [weatherData, setWeatherData] = useState(null)
+
+  useEffect(() => {
+    //fetch weather data
+    axios
+    .get(apiUrl)
+    .then(response => {
+      setWeatherData(response.data)
+    })
+  }, [city])
+
+    if(!weatherData) return null
+
+    return (
+      <div>
+        <h2>Weather in {city}</h2>
+        <img
+          alt={weatherData.weather[0].description}
+          src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`} />
+        <p>temperature {weatherData.main.temp} Celcius</p>
+        <p>wind {weatherData.wind.speed} m/s</p>
+      </div>
+    )
+}
+
 const CountryDetail = ({ country }) => {
   if(!country) return null
+
+  const latlng = (country.capitalInfo.hasOwnProperty('latlng'))
+    ? country.capitalInfo.latlng
+    : country.latlng
 
   return (
     <>
@@ -26,6 +58,10 @@ const CountryDetail = ({ country }) => {
         {Object.values(country.languages).map(language => <li key={language}>{language}</li>)}
       </ul>
       <img alt={country.flags.alt} src={country.flags.png}/>
+      <CurrentWeather
+        city={country.capital[0]}
+        lat={latlng[0]}
+        lon={latlng[1]} />
     </>
   )
 }
@@ -35,8 +71,6 @@ function App() {
   const [countries, setCountries] = useState(null)
   const [filter, setFilter] = useState('')
   const [shownCountry, setShownCountry] = useState(null)
-
-  console.log('render')
 
   const filteredCountries = (countries && filter)
     ? countries.filter((country) => country.name.common.toLowerCase().includes(filter.toLowerCase()))
@@ -50,12 +84,10 @@ function App() {
 
   useEffect(() => {
     //fetch countries
-    console.log('using effect')
     axios
       .get(allUrl)
       .then(response => {
         setCountries(response.data.map((country, index) => ({...country, originalIndex: index})))
-        console.log('countries received')
       })
   }, [])
 
