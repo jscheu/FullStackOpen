@@ -1,26 +1,15 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const CountriesList = ({ countries }) => {
-  if(!countries) return null
-  if(countries.length === 1) return null
-
-  if(countries.length > 10) {
-    return (
-      <>
-        <p>Too many matches, specify another filter</p>
-      </>
-    )
-  } else {
-    return (
-      <ul>
-        {countries.map((country, index) => <li key={index}>{country}<button>show</button></li>)}
-      </ul>
-    )
-  }
+const CountriesList = ({ countries, showCountry }) => {
+  return (
+    <ul>
+      {countries.map((country, index) => <li key={index}>{country.name.common}<button onClick={() => showCountry(country)}>show</button></li>)}
+    </ul>
+  )
 }
 
-const CountryDetails = ({ country }) => {
+const CountryDetail = ({ country }) => {
   if(!country) return null
 
   return (
@@ -61,15 +50,18 @@ function App() {
 
   useEffect(() => {
     //fetch countries
+    console.log('using effect')
     axios
       .get(allUrl)
       .then(response => {
         setCountries(response.data.map((country, index) => ({...country, originalIndex: index})))
+        console.log('countries received')
       })
   }, [])
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value)
+    setShownCountry(null)
   }
 
   return (
@@ -79,12 +71,14 @@ function App() {
         <input value={filter} onChange={handleFilterChange} />
       </div>
       <div>
-        <CountriesList
-          countries={
-            filteredCountries
-            ? filteredCountries.map(country => country.name.common)
-            : null} />
-        <CountryDetails country={shownCountry} />
+        {filteredCountries
+          && filteredCountries.length > 10
+          && <p>Too many matches, specify another filter</p>}
+        {filteredCountries
+          && filteredCountries.length > 1
+          && filteredCountries.length <= 10
+          && <CountriesList countries={filteredCountries} showCountry={setShownCountry} />}
+        {shownCountry && <CountryDetail country={shownCountry}/>}
       </div>
     </>
   )
