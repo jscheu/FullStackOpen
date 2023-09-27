@@ -1,0 +1,9 @@
+post http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+    "title": "Saving Princess Zelda",
+    "author": "Link",
+    "url": "some_url",
+    "likes": 1000000
+}
