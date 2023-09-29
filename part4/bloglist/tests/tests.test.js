@@ -130,3 +130,49 @@ describe('most blogs', () => {
         })
     })
 })
+
+describe('most likes', () => {
+    test('giving a null value should retrun null', () => {
+        const result = listHelper.mostLikes(null)
+        expect(result).toBe(null)
+    })
+
+    test('giving an empty array should return null', () => {
+        const result = listHelper.mostLikes([])
+        expect(result).toBe(null)
+    })
+
+    test('giving an array of integers should return null', () => {
+        const result = listHelper.mostLikes(testData.listWithIntegers)
+        expect(result).toBe(null)
+    })
+
+    test('giving a list where an object is missing the author key should skip that blog', () => {
+        const result = listHelper.mostLikes(testData.listWithMissingAuthor)
+        expect(result).toEqual({
+            author: "Edsger W. Dijkstra",
+            likes: 17
+        })
+    })
+
+    test('giving a list where all objects are missing the author key should return null', () => {
+        const result = listHelper.mostLikes(testData.listWithNoAuthors)
+        expect(result).toBe(null)
+    })
+
+    test('giving an array with one author should return that author and the likes for that blog', () => {
+        const result = listHelper.mostLikes(testData.listWithOneBlog)
+        expect(result).toEqual({
+            author: 'Edsger W. Dijkstra',
+            likes: 5
+        })
+    })
+
+    test('giving an array with many blogs should return one author with the number of blogs', () => {
+        const result = listHelper.mostLikes(testData.listWithManyBlogs)
+        expect(result).toEqual({
+            author: "Edsger W. Dijkstra",
+            likes: 17
+        })
+    })
+})

@@ -75,9 +75,42 @@ const mostBlogs = (blogs) => {
     return { author: mostFrequentAuthor, blogs: mostFrequentCount }
 }
 
+const mostLikes = (blogs) => {
+    //Return null if blogs is not an array
+    if(!Array.isArray(blogs)) return null
+
+    //Create a frequecy map of unique authors and likes count
+    const frequencyMap = blogs.reduce((accumulator, currentBlog) => {
+        //Skips object if author cannot be resolved
+        if(typeof currentBlog !== 'object'
+            || currentBlog == null
+            || currentBlog.author == null
+            || !Number.isInteger(currentBlog.likes))
+            return accumulator
+
+        const author = currentBlog.author
+
+        accumulator[author] = (accumulator[author] || 0) + currentBlog.likes
+        return accumulator
+    }, {})
+
+    //Handles the case where the frequency map was emplty due to missing or null keys
+    if(Object.keys(frequencyMap).length === 0) return null
+
+    //Find the highest value for likes
+    const highestLikes = Math.max(...Object.values(frequencyMap))
+
+    //Find the first author that matches the highes likes value
+    const mostLikedAuthor = Object.keys(frequencyMap).find(author => frequencyMap[author] === highestLikes)
+
+    //Create output object
+    return { author: mostLikedAuthor, likes: highestLikes}
+}
+
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
-    mostBlogs
+    mostBlogs,
+    mostLikes
 }
