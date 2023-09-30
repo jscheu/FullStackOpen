@@ -1,5 +1,6 @@
 const config = require('./utils/config')
 const express = require('express')
+require('express-async-errors')
 const app = express()
 const cors = require('cors')
 const blogsRouter = require('./controllers/blogs')
@@ -16,7 +17,7 @@ mongoose.connect(config.MONGODB_URI)
         logger.error('error connecting to MongoDB')
     })
 
-app.use(cors)
+app.use(cors())
 //app.use(express.static('build')) //will be used later
 app.use(express.json())
 //app.use(middleware.requestLogger) //will be used later
