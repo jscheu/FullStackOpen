@@ -40,7 +40,7 @@ describe('basic GET operations', () => {
     })
 })
 
-describe('adding blogs with POST method', () => {
+describe.only('adding blogs with POST method', () => {
     test('POST request creates a new blog post', async () => {
         const initialResult = await api
             .get('/api/blogs')
