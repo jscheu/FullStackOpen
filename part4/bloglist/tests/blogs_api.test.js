@@ -8,7 +8,8 @@ const testData = require('./test_data')
 beforeEach(async () => {
     await Blog.deleteMany({})
 
-    const blogObjects = testData.lists.listWithManyBlogs.map(blog => new Blog(blog))
+    const blogObjects = testData.lists.listWithManyBlogs
+        .map(blog => new Blog(blog))
 
     const promiseArray = blogObjects.map(blog => blog.save())
 
@@ -40,7 +41,7 @@ describe('basic GET operations', () => {
     })
 })
 
-describe.only('adding blogs with POST method', () => {
+describe('adding blogs with POST method', () => {
     test('POST request creates a new blog post', async () => {
         const initialResult = await api
             .get('/api/blogs')

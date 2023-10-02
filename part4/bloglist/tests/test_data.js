@@ -176,7 +176,80 @@ const blogs = {
     }
 }
 
+const users = {
+    superuser: {
+        username: 'superuser',
+        name: 'Josh',
+        password: 'iamthechosenone'
+    },
+
+    correctlyFormattedUser: {
+        username: 'big_papi',
+        name: 'Master Chief',
+        password: 'ilovecortana'
+    },
+
+    missingUsername: {
+        name: 'Mario',
+        password: 'somepassword'
+    },
+
+    missingName: {
+        username: 'big_pimpin',
+        password: 'pimplife'
+    },
+
+    missingPassword: {
+        username: 'luigi123',
+        name: 'Luigi'
+    },
+
+    shortUsername: {
+        username: 'me',
+        name: 'Mario',
+        password: '1234567'
+    },
+
+    shortPassword: {
+        username: 'a_unique_username',
+        name: 'Some Guy',
+        password: '1'
+    },
+
+    listWithOneUser: [
+        {
+            username: 'sir_nukes_alot',
+            name: 'Duke Nukem',
+            password: 'baconeater'
+        }
+    ],
+
+    listWithManyUsers: [
+        {
+            username: 'goomba_stomper',
+            name: 'Mario',
+            password: 'iwantthatpeach'
+        },
+        {
+            username: 'lu_daddy',
+            name: 'Luigi',
+            password: 'ilikepowerups'
+        },
+        {
+            username: 'mushroom_princess',
+            name: 'Peach',
+            password: 'mariocangetit'
+        },
+        {
+            username: 'king_koopa',
+            name: 'Bowser',
+            password: 'peachespeachespeaches'
+        }
+    ]
+}
+
 module.exports = {
     lists,
-    blogs
+    blogs,
+    users
 }

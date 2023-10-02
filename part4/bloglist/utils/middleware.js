@@ -13,12 +13,28 @@ const unknownEndpoint = (request, response) => {
 }
 
 const errorHandler = (error, request, response, next) => {
+  logger.error(error.name)
+  logger.error(error.code)
+  logger.error(error.keyPattern)
   logger.error(error.message)
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
+  }
+
+  if(error.name == 'MongoServerError'){
+    if(error.code === 11000) {//MongoDB duplicate key error
+      const conflictingField = Object.keys(error.keyPattern)[0]
+      const conflictingValue = error.keyValue[conflictingField]
+
+      if(conflictingField === 'username') {
+        return response.status(409).json({
+          error: `Username ${conflictingValue} already exists`
+        })
+      }
+    }
   }
 
   next(error)
