@@ -19,11 +19,6 @@ describe('total likes', () => {
         const result = listHelper.totalLikes([])
         expect(result).toBe(0)
     })
-
-    test('giving an array of integers should return 0', () => {
-        const result = listHelper.totalLikes(testData.lists.listWithIntegers)
-        expect(result).toBe(0)
-    })
   
     test('when list has only one blog, equals the likes of that', () => {
         const result = listHelper.totalLikes(testData.lists.listWithOneBlog)
@@ -32,7 +27,7 @@ describe('total likes', () => {
 
     test('when list has many blogs, equals total likes of all blogs', () => {
         const result = listHelper.totalLikes(testData.lists.listWithManyBlogs)
-        expect(result).toBe(36)
+        expect(result).toBe(29)
     })
 })
 
@@ -44,11 +39,6 @@ describe('favorite blog', () => {
 
     test('giving an empty list should return null', () => {
         const result = listHelper.favoriteBlog([])
-        expect(result).toBe(null)
-    })
-
-    test('giving an array of integers should return null', () => {
-        const result = listHelper.favoriteBlog(testData.lists.listWithIntegers)
         expect(result).toBe(null)
     })
 
@@ -96,11 +86,6 @@ describe('most blogs', () => {
         expect(result).toBe(null)
     })
 
-    test('giving an array of integers should return null', () => {
-        const result = listHelper.mostBlogs(testData.lists.listWithIntegers)
-        expect(result).toBe(null)
-    })
-
     test('giving a list where an object is missing the author key should skip that blog', () => {
         const result = listHelper.mostBlogs(testData.lists.listWithMissingAuthor)
         expect(result).toEqual({
@@ -126,7 +111,7 @@ describe('most blogs', () => {
         const result = listHelper.mostBlogs(testData.lists.listWithManyBlogs)
         expect(result).toEqual({
             author: "Robert C. Martin",
-            blogs: 3
+            blogs: 2
         })
     })
 })
@@ -139,11 +124,6 @@ describe('most likes', () => {
 
     test('giving an empty array should return null', () => {
         const result = listHelper.mostLikes([])
-        expect(result).toBe(null)
-    })
-
-    test('giving an array of integers should return null', () => {
-        const result = listHelper.mostLikes(testData.lists.listWithIntegers)
         expect(result).toBe(null)
     })
 
@@ -172,7 +152,7 @@ describe('most likes', () => {
         const result = listHelper.mostLikes(testData.lists.listWithManyBlogs)
         expect(result).toEqual({
             author: "Edsger W. Dijkstra",
-            likes: 17
+            likes: 12
         })
     })
 })

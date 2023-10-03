@@ -3,17 +3,22 @@ const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const User = require('../models/user')
+const Blog = require('../models/blog')
 const testData = require('./test_data')
 
 describe('when the database is empty initially', () => {
+    const superuser = testData.users.superuser
     let response
 
     beforeAll(async () => {
-        await User.deleteMany({})
+        await Promise.all([
+            User.deleteMany({}),
+            Blog.deleteMany({})
+        ])
 
         response = await api
             .post('/api/users')
-            .send(testData.users.superuser)
+            .send(superuser)
     })
     
     test('creation of new user returns status code 201', () => {
@@ -22,10 +27,10 @@ describe('when the database is empty initially', () => {
 
     test('returned user has all fields defined correctyl', () => {
         expect(response.body.username)
-            .toEqual(testData.users.superuser.username)
+            .toEqual(superuser.username)
 
         expect(response.body.name)
-            .toEqual(testData.users.superuser.name)
+            .toEqual(superuser.name)
 
         expect(response.body.id).toBeDefined()
     })
@@ -34,6 +39,24 @@ describe('when the database is empty initially', () => {
         const result = await api.get('/api/users')
 
         expect(result.body.length).toBe(1)
+    })
+
+    let login
+
+    beforeAll(async () => {
+        login = await api
+            .post('/api/login')
+            .send({
+                username: superuser.username,
+                password: superuser.password
+            })
+    })
+
+    test('user can successfully login', () => {
+        expect(login.status).toBe(200)
+        expect(login.body.username).toEqual(superuser.username)
+        expect(login.body.name).toEqual(superuser.name)
+        expect(login.body.token).toBeDefined()
     })
 })
 

@@ -51,7 +51,7 @@ blogsRouter.delete('/:id',
 
     if(blog.user.toString() !== request.user._id.toString()) {
         return response.status(403).json({
-            error: 'user not authorized to delete this resource'
+            error: 'user not authorized to delete this blog'
         })
     }
 
@@ -59,10 +59,33 @@ blogsRouter.delete('/:id',
     response.status(204).end()
 })
 
-blogsRouter.put('/:id', async (request, response) => {
-    const blog = new Blog(request.body)
+blogsRouter.put('/:id',
+    middleware.tokenValidator,
+    middleware.userExtractor,
+    async (request, response) => {
 
-    const result = await Blog.findByIdAndUpdate(request.params.id, request.body, { new: true })
+    const initialBlog = await Blog.findById(request.params.id)
+
+    if(!initialBlog) {
+        return response.status(404).json({
+            error: 'blog not found'
+        })
+    }
+
+    if(initialBlog.user.toString() !== request.user._id.toString()) {
+        return response.status(403).json({
+            error: 'user not authorized to modify this blog'
+        })
+    }
+
+    const result = await Blog.findByIdAndUpdate(
+        request.params.id,
+        request.body,
+        {
+            new: true,
+            runValidators: true
+        }
+    )
 
     response.json(result)
 })
