@@ -1,4 +1,6 @@
 const blogsRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
+const middleware = require('../utils/middleware')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
@@ -13,24 +15,46 @@ blogsRouter.get("/", async (request, response) => {
     response.json(blogs)
 })
 
-blogsRouter.post('/', async (request, response) => {
-    const user = (await User.find({}))[0]
+blogsRouter.post('/',
+    middleware.tokenValidator,
+    middleware.userExtractor,
+    async (request, response) => {
+
+    const user = request.user
 
     const blogData = request.body
-    blogData.user = user.toJSON().id
+    blogData.user = user._id
 
     const blog = new Blog(blogData)
 
     const result = await blog.save()
 
-    user.blogs = user.blogs.concat(result.toJSON().id)
+    user.blogs = user.blogs.concat(result._id)
     user.markModified('blogs')
     await user.save()
 
     return response.status(201).json(result)
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id',
+    middleware.tokenValidator,
+    middleware.userExtractor,
+    async (request, response) => {
+        
+    const blog = await Blog.findById(request.params.id)
+
+    if(!blog) {
+        return response.status(404).json({
+            error: 'blog not found'
+        })
+    }
+
+    if(blog.user.toString() !== request.user._id.toString()) {
+        return response.status(403).json({
+            error: 'user not authorized to delete this resource'
+        })
+    }
+
     await Blog.findByIdAndRemove(request.params.id)
     response.status(204).end()
 })

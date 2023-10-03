@@ -1,0 +1,10 @@
+post http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJpZ19wYXBpIiwiaWQiOiI2NTFiM2Y3Yzc1ZTM0NTQxMTljMjI3MjYiLCJpYXQiOjE2OTYyODkzMzF9.i8SblwwQdwvn0WUIJcTWna-P6YQnKQL7Oql1wZQGB-I
+
+{
+    "title": "Saving Princess Zelda",
+    "author": "Link",
+    "url": "some_url",
+    "likes": 1000000
+}
