@@ -3,6 +3,10 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
+const Notification = ({ type, message }) => {
+  return <div className={type}>{message}</div>
+}
+
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
@@ -11,6 +15,9 @@ const App = () => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
+  const [note, setNote] = useState('')
+
+  const noteTimeout = 5000
 
   console.log('app.jsx render')
 
@@ -27,8 +34,19 @@ const App = () => {
     if(loggedUserJSON) {
       const userLogin = JSON.parse(loggedUserJSON)
       setUser(userLogin)
+      notify({
+        type: 'info',
+        message: `logged in as ${userLogin.name}`
+      })
     }
   }, [])
+
+  const notify = (type, message) => {
+    setNote({ type, message })
+    setTimeout(() => {
+      setNote(null)
+    }, noteTimeout)
+  }
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -44,10 +62,14 @@ const App = () => {
       setUser(userLogin)
       setUsername('')
       setPassword('')
+      notify({
+        type: 'info',
+        message: `logged in as ${userLogin.name}`
+      })
     } catch (e) {
-      console.error(e.name)
-      console.error(e.message)
-      console.error(e.stack)
+      // console.error(e.name)
+      // console.error(e.message)
+      // console.error(e.stack)
     }
   }
 
@@ -69,15 +91,10 @@ const App = () => {
 
     try {
       const response = await blogService.create({ token, content })
-      if(response.status === 201) {
-        setBlogs([...blogs, response.data])
-        setTitle('')
-        setAuthor('')
-        setUrl('')
-      } else {
-        //handle unsuccessful blog creation
-        console.log(response.status)
-      }
+      setBlogs([...blogs, response.data])
+      setTitle('')
+      setAuthor('')
+      setUrl('')
     } catch (e) {
       console.error(e.name)
       console.error(e.message)
@@ -112,6 +129,7 @@ const App = () => {
 
   return (
     <div>
+      {note && Notification}
       <h2>blogs</h2>
       <p>{user.name} logged in<button name="logout" onClick={handleLogout}>logout</button></p>
       <h2>create new</h2>
