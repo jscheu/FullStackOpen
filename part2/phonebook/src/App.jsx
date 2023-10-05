@@ -93,7 +93,7 @@ const App = () => {
               setNotify(null)
             }, 5000)
           })
-          .catch(error => {
+          .catch(() => {
             setNotify({
               body: `${name} has already been removed from the server`,
               type: 'error'

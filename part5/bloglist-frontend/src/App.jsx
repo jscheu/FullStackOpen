@@ -1,75 +1,44 @@
 import { useState, useEffect } from 'react'
-import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
+import Notification from './components/Notification'
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
+import BlogList from './components/BlogList'
 
-const Notification = ({ type, message }) => {
-  return <div className={type}>{message}</div>
-}
+import './app.css'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
-  const [note, setNote] = useState('')
+  const [note, setNote] = useState(null)
+  const [latestBlog, setLatestBlog] = useState(null)
+
+  console.log('app render')
 
   const noteTimeout = 5000
-
-  console.log('app.jsx render')
-
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      const blogs = await blogService.getAll()
-      setBlogs(blogs)
-    }
-    fetchBlogs()
-  }, [])
-
-  useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
-    if(loggedUserJSON) {
-      const userLogin = JSON.parse(loggedUserJSON)
-      setUser(userLogin)
-      notify({
-        type: 'info',
-        message: `logged in as ${userLogin.name}`
-      })
-    }
-  }, [])
+  let timeoutId = null
 
   const notify = (type, message) => {
+    if(timeoutId) clearTimeout(timeoutId)
+
     setNote({ type, message })
-    setTimeout(() => {
+
+    timeoutId = setTimeout(() => {
       setNote(null)
     }, noteTimeout)
   }
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    
-    try {
-      const userLogin = await loginService.login({
-        username, password
-      })
+  const onLoginSuccess = (userLogin) => {
+    window.localStorage.setItem(
+      'loggedBloglistUser', JSON.stringify(userLogin)
+    )
+    setUser(userLogin)
+    notify('info', `logged in as ${userLogin.name}`)
+  }
 
-      window.localStorage.setItem(
-        'loggedBloglistUser', JSON.stringify(userLogin)
-      )
-      setUser(userLogin)
-      setUsername('')
-      setPassword('')
-      notify({
-        type: 'info',
-        message: `logged in as ${userLogin.name}`
-      })
-    } catch (e) {
-      // console.error(e.name)
-      // console.error(e.message)
-      // console.error(e.stack)
+  const onLoginError = (e) => {
+    if(e.response && e.response.status === 401) {
+      notify('error', 'wrong username or password')
+    } else {
+      notify('error', `error: ${e.message}`)
     }
   }
 
@@ -78,88 +47,47 @@ const App = () => {
     setUser(null)
   }
 
-  const handleCreate = async (event) => {
-    event.preventDefault()
-
-    const token = user.token
-
-    const content = {
-      title: title,
-      author: author,
-      url: url
-    }
-
-    try {
-      const response = await blogService.create({ token, content })
-      setBlogs([...blogs, response.data])
-      setTitle('')
-      setAuthor('')
-      setUrl('')
-    } catch (e) {
-      console.error(e.name)
-      console.error(e.message)
-      console.error(e.stack)
-    }
+  const onCreateBlog = (blog) => {
+    setLatestBlog(blog)
+    notify('info', `new blog ${blog.title} by ${blog.author} added`)
   }
+
+  const onCreateBlogError = (e) => {
+    notify('error', `error: ${e.message}`)
+  }
+
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
+    if(loggedUserJSON) {
+      const userLogin = JSON.parse(loggedUserJSON)
+      setUser(userLogin)
+      notify('info', `logged in as ${userLogin.name}`)
+    }
+
+    return () => clearTimeout(timeoutId)
+  }, [])
 
   if(user === null) {
     return (
       <div>
-       <h2>log in to application</h2>
-        <form onSubmit={handleLogin}>
-          <div>
-            username
-            <input type="text"
-              value={username}
-              name="Username"
-              onChange={({target}) => setUsername(target.value)}/>
-          </div>
-          <div>
-            password
-            <input type="password"
-              value={password}
-              name="Password"
-              onChange={({target}) => setPassword(target.value)}/>
-          </div>
-          <button type="submit">login</button>
-        </form>
+        <Notification note={note}/>
+        <LoginForm
+          onLoginSuccess={onLoginSuccess}
+          onLoginError={onLoginError}/>
       </div>
     )
   }
 
   return (
     <div>
-      {note && Notification}
+      <Notification note={note}/>
       <h2>blogs</h2>
       <p>{user.name} logged in<button name="logout" onClick={handleLogout}>logout</button></p>
-      <h2>create new</h2>
-      <form onSubmit={handleCreate}>
-        <div>
-          title:
-          <input type="text"
-            value={title}
-            name="title"
-            onChange={({target}) => setTitle(target.value)}/>
-        </div>
-        <div>
-          author:
-          <input type="text"
-            value={author}
-            name="author"
-            onChange={({target}) => setAuthor(target.value)}/>
-        </div>
-        <div>
-          url:
-          <input type="text"
-            value={url}
-            name="url"
-            onChange={({target}) => setUrl(target.value)}/>
-        </div>
-        <button type="submit">create</button>
-      </form>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
-      )}
+      <BlogForm
+        token={user.token}
+        onCreateBlog={onCreateBlog}
+        onCreateBlogError={onCreateBlogError}/>
+      <BlogList newBlog={latestBlog}/>
     </div>
   )
 }
