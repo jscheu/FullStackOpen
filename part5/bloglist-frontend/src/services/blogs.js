@@ -19,7 +19,18 @@ const create = async ({ token, content }) => {
   return response
 }
 
+const like = async ({ token, id }) => {
+  const headers = { 'Authorization': `Bearer ${token}` }
+
+  const response = await axios.put(`${apiUrl}/${id}`, null, {
+    headers: headers,
+    params: { action: 'incrementLikes' }
+  })
+  return response
+}
+
 export default {
   getAll,
-  create
+  create,
+  like
 }

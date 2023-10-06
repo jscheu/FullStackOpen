@@ -42,7 +42,7 @@ describe('posting blogs', () => {
             expect(returnedBlog.title).toEqual(blog.title)
             expect(returnedBlog.url).toEqual(blog.url)
             expect(returnedBlog.likes).toBe(blog.likes)
-            expect(returnedBlog.user).toBe(superuser.id)
+            expect(returnedBlog.user.id).toEqual(superuser.id)
         })
 
         test('missing likes property defaults to 0', async () => {

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Notification from './components/Notification'
+import Toggleable from './components/Toggleable'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import BlogList from './components/BlogList'
@@ -10,6 +11,8 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [note, setNote] = useState(null)
   const [latestBlog, setLatestBlog] = useState(null)
+
+  const blogFormRef = useRef(null)
 
   console.log('app render')
 
@@ -49,6 +52,7 @@ const App = () => {
 
   const onCreateBlog = (blog) => {
     setLatestBlog(blog)
+    if(blogFormRef.current) blogFormRef.current.toggleVisibility()
     notify('info', `new blog ${blog.title} by ${blog.author} added`)
   }
 
@@ -83,10 +87,12 @@ const App = () => {
       <Notification note={note}/>
       <h2>blogs</h2>
       <p>{user.name} logged in<button name="logout" onClick={handleLogout}>logout</button></p>
-      <BlogForm
-        token={user.token}
-        onCreateBlog={onCreateBlog}
-        onCreateBlogError={onCreateBlogError}/>
+      <Toggleable buttonLabel="new blog" ref={blogFormRef}>
+        <BlogForm
+          token={user.token}
+          onCreateBlog={onCreateBlog}
+          onCreateBlogError={onCreateBlogError}/>
+      </Toggleable>
       <BlogList newBlog={latestBlog}/>
     </div>
   )

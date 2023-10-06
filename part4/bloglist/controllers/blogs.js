@@ -24,14 +24,20 @@ blogsRouter.post('/',
     blogData.user = user._id
 
     const blog = new Blog(blogData)
+    const savedBlog = await blog.save()
 
-    const result = await blog.save()
-
-    user.blogs = user.blogs.concat(result._id)
+    user.blogs = user.blogs.concat(savedBlog._id)
     user.markModified('blogs')
     await user.save()
 
-    return response.status(201).json(result)
+    const populatedBlog = await Blog
+        .findById(savedBlog._id)
+        .populate('user', {
+            username: 1,
+            name: 1
+        })
+
+    return response.status(201).json(populatedBlog)
 })
 
 blogsRouter.delete('/:id',
@@ -70,15 +76,23 @@ blogsRouter.put('/:id',
         })
     }
 
-    if(initialBlog.user.toString() !== request.user._id.toString()) {
-        return response.status(403).json({
-            error: 'user not authorized to modify this blog'
-        })
+    let update
+
+    if(request.query.action === 'incrementLike') {
+        update = { $inc: { likes: 1 } }
+    } else {
+        if(initialBlog.user.toString() !== request.user._id.toString()) {
+            return response.status(403).json({
+                error: 'user not authorized to modify this blog'
+            })
+        }
+
+        update = request.body
     }
 
     const result = await Blog.findByIdAndUpdate(
         request.params.id,
-        request.body,
+        update,
         {
             new: true,
             runValidators: true
