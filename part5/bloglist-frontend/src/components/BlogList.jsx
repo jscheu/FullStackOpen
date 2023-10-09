@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import Blog from './Blog'
 import blogService from '../services/blogs'
 
@@ -21,10 +22,10 @@ const BlogList = ({ newBlog, user, notify }) => {
           const updatedBlog = response.data
           const updatedBlogs = blogs.map(blog => blog.id === updatedBlog.id ? updatedBlog : blog)
           setBlogs(sortByLikes(updatedBlogs))
-          notify('info', `you liked "${updatedBlog.title}"`)
+          if(notify) notify('info', `you liked "${updatedBlog.title}"`)
         }
       } catch (e) {
-        notify('error', `error: ${e.message}`)
+        if(notify) notify('error', `error: ${e.message}`)
       }
     }
 
@@ -41,12 +42,12 @@ const BlogList = ({ newBlog, user, notify }) => {
   
           if(response.status === 204) {
             setBlogs(blogs => blogs.filter(b => b.id !== blog.id))
-            notify('info', `removed "${blog.title}" by ${blog.author}`)
+            if(notify) notify('info', `removed "${blog.title}" by ${blog.author}`)
           } else {
-            notify('error', `error removing blog: status ${response.status}`)
+            if(notify) notify('error', `error removing blog: status ${response.status}`)
           }
         } catch (e) {
-          notify('error', `error removing blog: ${e.message}`)
+          if(notify) notify('error', `error removing blog: ${e.message}`)
         }
       }
     }
@@ -54,16 +55,17 @@ const BlogList = ({ newBlog, user, notify }) => {
     console.log('blog list render')
 
     useEffect(() => {
-        const fetchBlogs = async () => {
+      const fetchBlogs = async () => {
+        try {
           const blogs = await blogService.getAll()
           setBlogs(sortByLikes(blogs))
-        }
-        try {
-          fetchBlogs()
         } catch (e) {
-          notify('error', `error fetching blogs: ${e.message}`)
+          if(notify) notify('error', `error fetching blogs: ${e.message}`)
         }
-      }, [])
+      }
+      fetchBlogs()
+  }, [])
+  
 
       useEffect(() => {
         if(newBlog) setBlogs(blogs => [...blogs, newBlog])
@@ -81,6 +83,31 @@ const BlogList = ({ newBlog, user, notify }) => {
             )}
         </div>
       )
+}
+
+BlogList.propTypes = {
+  newBlog: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    author: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
+    likes: PropTypes.number.isRequired,
+    user: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired
+    })
+  }),
+  user: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired,
+    token: PropTypes.string.isRequired
+  }),
+  notify: PropTypes.func
+}
+
+BlogList.defaultProps = {
+  notify: () => {}
 }
 
 export default BlogList
