@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import blogService from '../services/blogs'
 
-const BlogForm = ({ token, onCreateBlog, onCreateBlogError }) => {
+const BlogForm = ({ token, onCreateBlog, notify }) => {
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
     const [url, setUrl] = useState('')
@@ -22,9 +22,12 @@ const BlogForm = ({ token, onCreateBlog, onCreateBlogError }) => {
             setTitle('')
             setAuthor('')
             setUrl('')
-            onCreateBlog(response.data)
+
+            const blog = response.data
+            notify('info', `new blog ${blog.title} by ${blog.author} added`)
+            onCreateBlog(blog)
         } catch (e) {
-            onCreateBlogError(e)
+            notify('error', `error creating blog: ${e.message}`)
         }
     }
 

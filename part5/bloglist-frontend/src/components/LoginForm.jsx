@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import loginService from '../services/login'
 
-const LoginForm = ({ onLoginSuccess, onLoginError }) => {
+const LoginForm = ({ onLoginSuccess, notify }) => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
 
@@ -14,10 +14,14 @@ const LoginForm = ({ onLoginSuccess, onLoginError }) => {
             const userLogin = await loginService.login({
                 username, password
             })
-    
+            notify('info', `logged in as ${userLogin.name}`)
             onLoginSuccess(userLogin)
         } catch (e) {
-            onLoginError(e)
+            if(e.response && e.response.status === 401) {
+                notify('error', 'wrong username or password')
+            } else {
+                notify('error', `error: ${e.message}`)
+            }
         }
     }
 

@@ -15,16 +15,17 @@ const App = () => {
   const blogFormRef = useRef(null)
 
   console.log('app render')
+  console.log(user)
 
   const noteTimeout = 5000
-  let timeoutId = null
+  const timeoutIdRef = useRef(null)
 
   const notify = (type, message) => {
-    if(timeoutId) clearTimeout(timeoutId)
+    if(timeoutIdRef.current) clearTimeout(timeoutIdRef.current)
 
     setNote({ type, message })
 
-    timeoutId = setTimeout(() => {
+    timeoutIdRef.current = setTimeout(() => {
       setNote(null)
     }, noteTimeout)
   }
@@ -34,30 +35,18 @@ const App = () => {
       'loggedBloglistUser', JSON.stringify(userLogin)
     )
     setUser(userLogin)
-    notify('info', `logged in as ${userLogin.name}`)
-  }
-
-  const onLoginError = (e) => {
-    if(e.response && e.response.status === 401) {
-      notify('error', 'wrong username or password')
-    } else {
-      notify('error', `error: ${e.message}`)
-    }
   }
 
   const handleLogout = () => {
+    const name = user.name
     window.localStorage.removeItem('loggedBloglistUser')
     setUser(null)
+    notify('info', `${name} successfully logged out`)
   }
 
   const onCreateBlog = (blog) => {
     setLatestBlog(blog)
     if(blogFormRef.current) blogFormRef.current.toggleVisibility()
-    notify('info', `new blog ${blog.title} by ${blog.author} added`)
-  }
-
-  const onCreateBlogError = (e) => {
-    notify('error', `error: ${e.message}`)
   }
 
   useEffect(() => {
@@ -77,7 +66,7 @@ const App = () => {
         <Notification note={note}/>
         <LoginForm
           onLoginSuccess={onLoginSuccess}
-          onLoginError={onLoginError}/>
+          notify={notify}/>
       </div>
     )
   }
@@ -91,9 +80,9 @@ const App = () => {
         <BlogForm
           token={user.token}
           onCreateBlog={onCreateBlog}
-          onCreateBlogError={onCreateBlogError}/>
+          notify={notify}/>
       </Toggleable>
-      <BlogList newBlog={latestBlog}/>
+      <BlogList newBlog={latestBlog} user={user} notify={notify}/>
     </div>
   )
 }

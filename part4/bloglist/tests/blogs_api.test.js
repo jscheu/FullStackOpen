@@ -8,15 +8,22 @@ const User = require('../models/user')
 const testData = require('./test_data')
 
 const superuser = new User(testData.users.superuser)
+const altUser = new User(testData.users.correctlyFormattedUser)
 
 beforeAll(async () => {
     await User.deleteMany({})
     await superuser.save()
+    await altUser.save()
 })
 
 const supertoken = jwt.sign({
     username: superuser.username,
     id: superuser.id
+}, process.env.SECRET)
+
+const altToken = jwt.sign({
+    username: altUser.username,
+    id: altUser.id
 }, process.env.SECRET)
 
 describe('posting blogs', () => {
@@ -160,6 +167,19 @@ describe('when database contains blogs initially', () =>{
             expect(initialBlog.likes).not.toBe(updates.likes)
         })
 
+        test('like a blog with alt user', async () => {
+            const initialBlog = (await api.get('/api/blogs')).body[0]
+
+            const blogId = initialBlog.id
+
+            const response = await api
+                .put(`/api/blogs/${blogId}?action=incrementLike`)
+                .set(`Authorization`, `Bearer ${altToken}`)
+                .expect(200)
+
+            expect(response.body.likes).toBe(initialBlog.likes + 1)
+        })
+
         test('id not found results in status 404', async () => {
             falseId = new mongoose.Types.ObjectId()
 
@@ -226,19 +246,11 @@ describe('when database contains blogs initially', () =>{
         })
 
         test('unauthorized user results in status 403', async () => {
-            const newUser = new User(testData.users.correctlyFormattedUser)
-            await newUser.save()
-
-            const userToken = jwt.sign({
-                username: newUser.username,
-                id: newUser.id
-            }, process.env.SECRET)
-
             const idToRemove = idsInDatabase[0]
 
             await api
                 .delete(`/api/blogs/${idToRemove}`)
-                .set(`Authorization`, `Bearer ${userToken}`)
+                .set(`Authorization`, `Bearer ${altToken}`)
                 .expect(403)
         })
 

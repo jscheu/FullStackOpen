@@ -90,7 +90,7 @@ blogsRouter.put('/:id',
         update = request.body
     }
 
-    const result = await Blog.findByIdAndUpdate(
+    const savedBlog = await Blog.findByIdAndUpdate(
         request.params.id,
         update,
         {
@@ -99,7 +99,14 @@ blogsRouter.put('/:id',
         }
     )
 
-    response.json(result)
+    const populatedBlog = await Blog
+        .findById(savedBlog._id)
+        .populate('user', {
+            username: 1,
+            name: 1
+        })
+
+    response.json(populatedBlog)
 })
 
 module.exports = blogsRouter

@@ -24,13 +24,21 @@ const like = async ({ token, id }) => {
 
   const response = await axios.put(`${apiUrl}/${id}`, null, {
     headers: headers,
-    params: { action: 'incrementLikes' }
+    params: { action: 'incrementLike' }
   })
+  return response
+}
+
+const remove = async ({ token, id }) => {
+  const headers = { 'Authorization': `Bearer ${token}` }
+
+  const response = await axios.delete(`${apiUrl}/${id}`, { headers: headers })
   return response
 }
 
 export default {
   getAll,
   create,
-  like
+  like,
+  remove
 }
