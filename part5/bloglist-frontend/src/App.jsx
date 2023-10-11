@@ -75,6 +75,7 @@ const App = () => {
       <Notification note={note}/>
       <h2>blogs</h2>
       <p>{user.name} logged in<button
+        id="logout-button"
         name="logout"
         onClick={handleLogout}>logout</button></p>
       <Toggleable buttonLabel="new blog" ref={blogFormRef}>

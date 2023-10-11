@@ -48,7 +48,7 @@ describe('<Blog />', () => {
   })
 
   test('at start, details are not displayed', async () => {
-    const div = container.querySelector('.details')
+    const div = container.querySelector('.blog-details')
     expect(div).toHaveStyle('display: none')
   })
 
