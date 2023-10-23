@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
+import { setBlogs, updateBlog, removeBlogById } from '../reducers/blogsReducer';
 import PropTypes from 'prop-types';
 import Blog from './Blog';
 import blogService from '../services/blogs';
 
 const BlogList = ({ newBlog, user }) => {
   const dispatch = useDispatch();
-  const [blogs, setBlogs] = useState([]);
+  const blogs = useSelector((state) => state.blogs);
 
   const sortByLikes = (unsortedBlogs) => {
     const sortedBlogs = unsortedBlogs.sort((a, b) => b.likes - a.likes);
@@ -23,10 +24,7 @@ const BlogList = ({ newBlog, user }) => {
 
       if (response.status === 200) {
         const updatedBlog = response.data;
-        const updatedBlogs = blogs.map((blog) =>
-          blog.id === updatedBlog.id ? updatedBlog : blog,
-        );
-        setBlogs(sortByLikes(updatedBlogs));
+        dispatch(updateBlog(updatedBlog))
 
         const type = 'info';
         const message = `you liked "${updatedBlog.title}"`;
@@ -53,7 +51,7 @@ const BlogList = ({ newBlog, user }) => {
         });
 
         if (response.status === 204) {
-          setBlogs((blogs) => blogs.filter((b) => b.id !== blog.id));
+          dispatch(removeBlogById(blog.id));
           const type = 'info';
           const message = `removed "${blog.title}" by ${blog.author}`;
           dispatch(setNotification({ type, message }));
@@ -76,7 +74,7 @@ const BlogList = ({ newBlog, user }) => {
     const fetchBlogs = async () => {
       try {
         const blogs = await blogService.getAll();
-        setBlogs(sortByLikes(blogs));
+        dispatch(setBlogs(sortByLikes(blogs)));
       } catch (e) {
         const type = 'error';
         const message = `error fetching blogs: ${e.message}`;
@@ -87,7 +85,7 @@ const BlogList = ({ newBlog, user }) => {
   }, []);
 
   useEffect(() => {
-    if (newBlog) setBlogs((blogs) => [...blogs, newBlog]);
+    if (newBlog) dispatch(addBlog(newBlog))
   }, [newBlog]);
 
   return (
