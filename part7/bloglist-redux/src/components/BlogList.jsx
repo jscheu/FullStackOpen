@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
 import { setBlogs, updateBlog, removeBlogById } from '../reducers/blogsReducer';
-import PropTypes from 'prop-types';
 import Blog from './Blog';
 import blogService from '../services/blogs';
 
-const BlogList = ({ newBlog, user }) => {
+const BlogList = () => {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
   const blogs = useSelector((state) => state.blogs);
 
   const sortByLikes = (unsortedBlogs) => {
@@ -24,7 +24,7 @@ const BlogList = ({ newBlog, user }) => {
 
       if (response.status === 200) {
         const updatedBlog = response.data;
-        dispatch(updateBlog(updatedBlog))
+        dispatch(updateBlog(updatedBlog));
 
         const type = 'info';
         const message = `you liked "${updatedBlog.title}"`;
@@ -84,43 +84,18 @@ const BlogList = ({ newBlog, user }) => {
     fetchBlogs();
   }, []);
 
-  useEffect(() => {
-    if (newBlog) dispatch(addBlog(newBlog))
-  }, [newBlog]);
-
   return (
     <div>
       {blogs.map((blog) => (
         <Blog
           key={blog.id}
           blog={blog}
-          user={user}
           onLikeClick={handleLikeClick}
           onRemoveClick={handleRemoveClick}
         />
       ))}
     </div>
   );
-};
-
-BlogList.propTypes = {
-  newBlog: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    author: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
-    likes: PropTypes.number.isRequired,
-    user: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      username: PropTypes.string.isRequired,
-    }),
-  }),
-  user: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    username: PropTypes.string.isRequired,
-    token: PropTypes.string.isRequired,
-  }),
 };
 
 export default BlogList;

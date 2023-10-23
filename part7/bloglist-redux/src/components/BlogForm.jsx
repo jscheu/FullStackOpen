@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setNotification } from '../reducers/notificationReducer';
+import { addBlog } from '../reducers/blogsReducer';
 import blogService from '../services/blogs';
 
-const BlogForm = ({ token, onCreateBlog }) => {
+const BlogForm = ({ onCreateBlog }) => {
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.user.token);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [url, setUrl] = useState('');
@@ -27,7 +29,8 @@ const BlogForm = ({ token, onCreateBlog }) => {
       setUrl('');
 
       const blog = response.data;
-      onCreateBlog(blog);
+      dispatch(addBlog(blog));
+      onCreateBlog();
 
       const type = 'info';
       const message = `new blog ${blog.title} by ${blog.author} added`;

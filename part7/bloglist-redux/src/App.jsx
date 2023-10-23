@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { setNotification } from './reducers/notificationReducer';
+import { setUser } from './reducers/userReducer';
 
 import Notification from './components/Notification';
 import Toggleable from './components/Toggleable';
@@ -12,8 +13,7 @@ import './app.css';
 
 const App = () => {
   const dispatch = useDispatch();
-  const [user, setUser] = useState(null);
-  const [latestBlog, setLatestBlog] = useState(null);
+  const user = useSelector((state) => state.user);
 
   const blogFormRef = useRef(null);
 
@@ -30,15 +30,14 @@ const App = () => {
   const handleLogout = () => {
     const name = user.name;
     window.localStorage.removeItem('loggedBloglistUser');
-    setUser(null);
+    dispatch(setUser(null));
 
     const type = 'info';
     const message = `${name} successfully logged out`;
     dispatch(setNotification({ type, message }));
   };
 
-  const onCreateBlog = (blog) => {
-    setLatestBlog(blog);
+  const onCreateBlog = () => {
     if (blogFormRef.current) blogFormRef.current.toggleVisibility();
   };
 
@@ -46,7 +45,7 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser');
     if (loggedUserJSON) {
       const userLogin = JSON.parse(loggedUserJSON);
-      setUser(userLogin);
+      dispatch(setUser(userLogin));
 
       const type = 'info';
       const message = `logged in as ${userLogin.name}`;
@@ -74,9 +73,9 @@ const App = () => {
         </button>
       </p>
       <Toggleable buttonLabel='new blog' ref={blogFormRef}>
-        <BlogForm token={user.token} onCreateBlog={onCreateBlog} />
+        <BlogForm onCreateBlog={onCreateBlog} />
       </Toggleable>
-      <BlogList newBlog={latestBlog} user={user} />
+      <BlogList />
     </div>
   );
 };

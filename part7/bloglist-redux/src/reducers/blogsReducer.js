@@ -18,7 +18,8 @@ const blogsSlice = createSlice({
     },
     removeBlogById(state, action) {
       const id = action.payload;
-      return state.map((b) => b.id !== id);
+      const updatedState = state.filter((b) => b.id !== id);
+      return updatedState;
     },
   },
 });
