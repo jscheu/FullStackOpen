@@ -1,21 +1,19 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setNotification } from './reducers/notificationReducer';
-import { setUser } from './reducers/userReducer';
+import { setActiveUser } from './reducers/activeUserReducer';
+import { Route, Routes } from 'react-router-dom';
 
 import Notification from './components/Notification';
-import Toggleable from './components/Toggleable';
 import LoginForm from './components/LoginForm';
-import BlogForm from './components/BlogForm';
-import BlogList from './components/BlogList';
 
 import './app.css';
+import BlogsView from './views/BlogsView';
+import UsersView from './views/UsersView';
 
 const App = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user);
-
-  const blogFormRef = useRef(null);
+  const user = useSelector((state) => state.activeUser);
 
   console.log('app render');
 
@@ -24,28 +22,24 @@ const App = () => {
       'loggedBloglistUser',
       JSON.stringify(userLogin),
     );
-    setUser(userLogin);
+    setActiveUser(userLogin);
   };
 
   const handleLogout = () => {
     const name = user.name;
     window.localStorage.removeItem('loggedBloglistUser');
-    dispatch(setUser(null));
+    dispatch(setActiveUser(null));
 
     const type = 'info';
     const message = `${name} successfully logged out`;
     dispatch(setNotification({ type, message }));
   };
 
-  const onCreateBlog = () => {
-    if (blogFormRef.current) blogFormRef.current.toggleVisibility();
-  };
-
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser');
     if (loggedUserJSON) {
       const userLogin = JSON.parse(loggedUserJSON);
-      dispatch(setUser(userLogin));
+      dispatch(setActiveUser(userLogin));
 
       const type = 'info';
       const message = `logged in as ${userLogin.name}`;
@@ -72,10 +66,10 @@ const App = () => {
           logout
         </button>
       </p>
-      <Toggleable buttonLabel='new blog' ref={blogFormRef}>
-        <BlogForm onCreateBlog={onCreateBlog} />
-      </Toggleable>
-      <BlogList />
+      <Routes>
+        <Route path='/' element={<BlogsView />} />
+        <Route path='/users' element={<UsersView />} />
+      </Routes>
     </div>
   );
 };

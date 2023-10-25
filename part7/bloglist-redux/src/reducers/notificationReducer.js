@@ -11,7 +11,6 @@ const notificationSlice = createSlice({
   initialState,
   reducers: {
     setNotification(state, action) {
-      console.log(action);
       const { type, message, timeout } = action.payload;
       const sanitizedTimeout = Number.isInteger(timeout) ? timeout : null;
 

@@ -6,7 +6,7 @@ import blogService from '../services/blogs';
 
 const BlogForm = ({ onCreateBlog }) => {
   const dispatch = useDispatch();
-  const token = useSelector((state) => state.user.token);
+  const token = useSelector((state) => state.activeUser.token);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [url, setUrl] = useState('');

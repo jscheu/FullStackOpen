@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 const Blog = ({ blog, onLikeClick, onRemoveClick }) => {
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.activeUser);
   const [details, setDetails] = useState(false);
 
   const buttonText = details ? 'hide' : 'view';

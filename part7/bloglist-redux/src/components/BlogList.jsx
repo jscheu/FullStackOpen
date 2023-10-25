@@ -7,8 +7,10 @@ import blogService from '../services/blogs';
 
 const BlogList = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.activeUser);
   const blogs = useSelector((state) => state.blogs);
+
+  console.log(blogs);
 
   const sortByLikes = (unsortedBlogs) => {
     const sortedBlogs = unsortedBlogs.sort((a, b) => b.likes - a.likes);
