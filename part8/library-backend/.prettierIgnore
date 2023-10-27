@@ -1,0 +1,30 @@
+# Dependency directories
+node_modules/
+bower_components/
+
+# Output folders
+dist/
+build/
+
+# Configuration files
+.env
+.eslintrc
+.tsconfig.json
+
+# Logs and databases
+*.log
+*.sqlite
+
+# Temporary files
+*.tmp
+*.temp
+
+# Vendor and auto-generated files
+*.min.js
+*.auto.js
+*.dll.js
+
+# Cache and public
+.cache/
+.next/
+public/
