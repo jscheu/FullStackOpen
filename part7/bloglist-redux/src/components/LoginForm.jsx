@@ -24,11 +24,11 @@ const LoginForm = ({ onLoginSuccess }) => {
       onLoginSuccess(userLogin);
     } catch (e) {
       if (e.response && e.response.status === 401) {
-        const type = 'error';
+        const type = 'danger';
         const message = 'wrong username or password';
         dispatch(setNotification({ type, message }));
       } else {
-        const type = 'error';
+        const type = 'warning';
         const message = `error: ${e.message}`;
         dispatch(setNotification({ type, message }));
       }

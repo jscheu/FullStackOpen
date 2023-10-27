@@ -1,102 +1,26 @@
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setNotification } from '../reducers/notificationReducer';
-import { setBlogs, updateBlog, removeBlogById } from '../reducers/blogsReducer';
-import Blog from './Blog';
-import blogService from '../services/blogs';
+import { useSelector } from 'react-redux';
+
+import { Table } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const BlogList = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.activeUser);
   const blogs = useSelector((state) => state.blogs);
-
-  console.log(blogs);
-
-  const sortByLikes = (unsortedBlogs) => {
-    const sortedBlogs = unsortedBlogs.sort((a, b) => b.likes - a.likes);
-    return sortedBlogs;
-  };
-
-  const handleLikeClick = async (blogId) => {
-    try {
-      const response = await blogService.like({
-        token: user.token,
-        id: blogId,
-      });
-
-      if (response.status === 200) {
-        const updatedBlog = response.data;
-        dispatch(updateBlog(updatedBlog));
-
-        const type = 'info';
-        const message = `you liked "${updatedBlog.title}"`;
-        dispatch(setNotification({ type, message }));
-      }
-    } catch (e) {
-      const type = 'error';
-      const message = `error: ${e.message}`;
-      dispatch(setNotification({ type, message }));
-    }
-  };
-
-  const handleRemoveClick = async (blog) => {
-    const confirmed = window.confirm(
-      `remove "${blog.title}" by ${blog.author}?`,
-    );
-
-    if (confirmed) {
-      console.log(user.token);
-      try {
-        const response = await blogService.remove({
-          token: user.token,
-          id: blog.id,
-        });
-
-        if (response.status === 204) {
-          dispatch(removeBlogById(blog.id));
-          const type = 'info';
-          const message = `removed "${blog.title}" by ${blog.author}`;
-          dispatch(setNotification({ type, message }));
-        } else {
-          const type = 'error';
-          const message = `error removing blog: status ${response.status}`;
-          dispatch(setNotification({ type, message }));
-        }
-      } catch (e) {
-        const type = 'error';
-        const message = `error removing blog: ${e.message}`;
-        dispatch(setNotification({ type, message }));
-      }
-    }
-  };
 
   console.log('blog list render');
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const blogs = await blogService.getAll();
-        dispatch(setBlogs(sortByLikes(blogs)));
-      } catch (e) {
-        const type = 'error';
-        const message = `error fetching blogs: ${e.message}`;
-        dispatch(setNotification({ type, message }));
-      }
-    };
-    fetchBlogs();
-  }, []);
-
   return (
-    <div>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          onLikeClick={handleLikeClick}
-          onRemoveClick={handleRemoveClick}
-        />
-      ))}
-    </div>
+    <Table striped>
+      <tbody>
+        {blogs.map((blog) => (
+          <tr key={blog.id}>
+            <td key={`${blog.id}-title`}>
+              <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+            </td>
+            <td key={`${blog.id}-author`}>by {blog.author}</td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
   );
 };
 

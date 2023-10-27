@@ -1,15 +1,18 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Routes, Route } from 'react-router-dom';
+
 import { setNotification } from '../reducers/notificationReducer';
 import { setUsers } from '../reducers/usersReducer';
 
 import usersService from '../services/users';
 
+import UsersList from '../components/UsersList';
+import UserDetail from '../components/UserDetail';
+
 const UsersView = () => {
   const dispatch = useDispatch();
   const users = useSelector((state) => state.users);
-
-  console.log(users);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -17,7 +20,7 @@ const UsersView = () => {
         const users = await usersService.getAll();
         dispatch(setUsers(users));
       } catch (e) {
-        const type = 'error';
+        const type = 'warning';
         const message = `error fetching blogs: ${e.message}`;
         dispatch(setNotification({ type, message }));
       }
@@ -27,25 +30,10 @@ const UsersView = () => {
 
   return (
     <div>
-      <h2>Users</h2>
-      <table>
-        <thead>
-          <tr>
-            <th key='topLeft'></th>
-            <th key='createdHeader'>blogs created</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user, index) => {
-            return (
-              <tr key={index}>
-                <td key={`user${index}`}>{user.name}</td>
-                <td key={`created${index}`}>{user.blogs.length}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <Routes>
+        <Route path='/' element={<UsersList users={users} />} />
+        <Route path='/:id' element={<UserDetail />} />
+      </Routes>
     </div>
   );
 };

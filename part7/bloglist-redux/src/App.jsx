@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setNotification } from './reducers/notificationReducer';
 import { setActiveUser } from './reducers/activeUserReducer';
@@ -7,9 +7,12 @@ import { Route, Routes } from 'react-router-dom';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 
-import './app.css';
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import { Container } from 'react-bootstrap';
+
 import BlogsView from './views/BlogsView';
 import UsersView from './views/UsersView';
+import NavigationBar from './components/NavigationBar';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -22,17 +25,7 @@ const App = () => {
       'loggedBloglistUser',
       JSON.stringify(userLogin),
     );
-    setActiveUser(userLogin);
-  };
-
-  const handleLogout = () => {
-    const name = user.name;
-    window.localStorage.removeItem('loggedBloglistUser');
-    dispatch(setActiveUser(null));
-
-    const type = 'info';
-    const message = `${name} successfully logged out`;
-    dispatch(setNotification({ type, message }));
+    dispatch(setActiveUser(userLogin));
   };
 
   useEffect(() => {
@@ -49,28 +42,22 @@ const App = () => {
 
   if (user === null) {
     return (
-      <div>
+      <Container>
         <Notification />
         <LoginForm onLoginSuccess={onLoginSuccess} />
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div>
+    <Container>
       <Notification />
-      <h2>blogs</h2>
-      <p>
-        {user.name} logged in
-        <button id='logout-button' name='logout' onClick={handleLogout}>
-          logout
-        </button>
-      </p>
+      <NavigationBar />
       <Routes>
-        <Route path='/' element={<BlogsView />} />
-        <Route path='/users' element={<UsersView />} />
+        <Route path='*' element={<BlogsView />} />
+        <Route path='/users/*' element={<UsersView />} />
       </Routes>
-    </div>
+    </Container>
   );
 };
 

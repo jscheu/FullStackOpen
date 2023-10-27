@@ -2,6 +2,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { clearNotification } from '../reducers/notificationReducer';
 import { useEffect } from 'react';
 
+import { Alert } from 'react-bootstrap';
+
 const Notification = () => {
   const dispatch = useDispatch();
   const { type, message, timeout } = useSelector((state) => state.notification);
@@ -19,7 +21,7 @@ const Notification = () => {
 
   if (!message) return null;
 
-  return <div className={type}>{message}</div>;
+  return <Alert variant={type}>{message}</Alert>;
 };
 
 export default Notification;
