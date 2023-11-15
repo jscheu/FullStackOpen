@@ -9,7 +9,11 @@ const Authors = (props) => {
   const [born, setBorn] = useState('');
   const result = useQuery(ALL_AUTHORS);
 
-  const [updateAuthor] = useMutation(UPDATE_AUTHOR);
+  const [updateAuthor] = useMutation(UPDATE_AUTHOR, {
+    onError: (error) => {
+      console.log(error);
+    }
+  });
 
   const submit = (event) => {
     event.preventDefault();
@@ -52,21 +56,25 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-      <h3>set birthyear</h3>
-      <form onSubmit={submit}>
-        <Select
-          options={selectNames}
-          onChange={({ label }) => setName(label)}
-        />
+      {props.loggedIn /*display only if token is present*/ && (
         <div>
-          born{' '}
-          <input
-            value={born}
-            onChange={({ target }) => setBorn(target.value)}
-          />
+          <h3>set birthyear</h3>
+          <form onSubmit={submit}>
+            <Select
+              options={selectNames}
+              onChange={({ label }) => setName(label)}
+            />
+            <div>
+              born{' '}
+              <input
+                value={born}
+                onChange={({ target }) => setBorn(target.value)}
+              />
+            </div>
+            <button type="submit">update author</button>
+          </form>
         </div>
-        <button type="submit">update author</button>
-      </form>
+      )}
     </div>
   );
 };
