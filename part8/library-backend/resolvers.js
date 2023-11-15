@@ -37,16 +37,16 @@ const resolvers = {
       const authorsWithBookCount = await Author.aggregate([
         {
           $lookup: {
-            from: 'books', // The name of the collection to join.
-            localField: '_id', // The field from the authors collection.
-            foreignField: 'author', // The field from the books collection.
-            as: 'books' // The array field to add to each author.
+            from: 'books',
+            localField: '_id',
+            foreignField: 'author',
+            as: 'books'
           }
         },
         {
           $project: {
             id: '$_id',
-            name: 1, // Include other author fields as needed.
+            name: 1,
             born: 1,
             bookCount: { $size: '$books' } // Count the number of books for each author.
           }
