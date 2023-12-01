@@ -1,7 +1,11 @@
-import { Gender, NewPatient } from './types';
+import { Entry, Gender, NewPatient } from './types';
 
 const isString = (text: unknown): text is string => {
   return typeof text === 'string' || text instanceof String;
+};
+
+const isArray = (param: unknown): param is Array<unknown> => {
+  return Array.isArray(param);
 };
 
 const isEmptyString = (text: string): boolean => {
@@ -63,6 +67,28 @@ const parseDate = (date: unknown): string => {
   return date;
 };
 
+const isEntry = (_entry: unknown): _entry is Entry => {
+  //Currently 'Entry' is not defined with properties
+  return true;
+};
+
+const isEntryArray = (entries: Array<unknown>): entries is Entry[] => {
+  entries.forEach((entry) => isEntry(entry));
+  return true;
+};
+
+const parseEntries = (entries: unknown): Entry[] => {
+  if (!isArray(entries)) {
+    throw new Error('Array expected for property "entries": ' + entries);
+  }
+
+  if (!isEntryArray(entries)) {
+    throw new Error('Incorrect data in "entries": ' + entries);
+  }
+
+  return entries;
+};
+
 export const toNewPatient = (object: unknown): NewPatient => {
   if (!object || typeof object !== 'object') {
     throw new Error('Incorrect or missing patient data');
@@ -72,7 +98,8 @@ export const toNewPatient = (object: unknown): NewPatient => {
     const newPatient: NewPatient = {
       name: parseName(object.name),
       occupation: parseOccupation(object.occupation),
-      gender: parseGender(object.gender)
+      gender: parseGender(object.gender),
+      entries: 'entries' in object ? parseEntries(object.entries) : []
     };
 
     if ('ssn' in object && object.ssn !== '') {
