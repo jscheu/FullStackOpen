@@ -1,8 +1,10 @@
 import { Entry, Diagnosis } from "../../types";
 import diagnosesService from '../../services/diagnoses';
 import { useEffect, useState } from "react";
-import EntryDetail from "./EntryDetail";
 import BasicEntryDetail from "./BasicEntryDetail";
+import HealtheCheckEntryDetail from "./HealthCheckEntryDetail";
+import HospitalEntryDetail from "./HospitalEntryDetail";
+import OccupationalHealthcareEntryDetail from "./OccupationalHealthcareEntryDetail";
 
 interface Props {
     entries: Array<Entry>;
@@ -10,6 +12,48 @@ interface Props {
 
 const EntriesList = ({ entries }: Props) => {
     const [allDiagnoses, setAllDiagnoses] = useState<Diagnosis[]>([]);
+
+    const getEntryDiagnoses = (codes: string[]): Diagnosis[] => {
+        const diagnosisArray: Diagnosis[] = [];
+        codes.forEach(code => {
+            const diagnosis = allDiagnoses.find(d => d.code === code);
+            if (diagnosis) diagnosisArray.push(diagnosis);
+        })
+
+        return diagnosisArray;
+    }
+
+    const assertNever = (x: never): never => {
+        throw new Error('Unexpected object type: ' + x);
+    }
+
+    const getEntryTitleText = (entryType: Entry["type"]): string => {
+        switch (entryType) {
+            case 'HealthCheck':
+                return 'Health Check';
+            case 'Hospital':
+                return 'Hospital';
+            case 'OccupationalHealthcare':
+                return 'Occupational Healthcare'
+            default:
+                assertNever(entryType);
+        }
+        return '';
+    }
+
+    const renderDetailComponenet = (entry: Entry): React.ReactElement => {
+        switch (entry.type) {
+            case 'HealthCheck':
+                return <HealtheCheckEntryDetail healthCheckRating={entry.healthCheckRating} />
+            case 'Hospital':
+                return <HospitalEntryDetail discharge={entry.discharge} />
+            case 'OccupationalHealthcare':
+                return <OccupationalHealthcareEntryDetail employerName={entry.employerName} />
+            default:
+                assertNever(entry);
+        }
+        return <></>
+    }
 
     useEffect(() => {
         //Create array of unique diagnosis codes present in entries array
@@ -53,8 +97,13 @@ const EntriesList = ({ entries }: Props) => {
                 ? <div>
                     {entries.map(entry => (
                         <div key={entry.id}>
-                            <div><strong>{entry.date}</strong></div>
-                            <BasicEntryDetail entry={entry} diagnoses={entry.diagnosisCodes?.map(code => allDiagnoses.find(diagnosis => diagnosis.code === code))} />
+                            <div><strong>{entry.date} {getEntryTitleText(entry.type)}</strong></div>
+                            <BasicEntryDetail
+                                entry={entry}
+                                diagnoses={entry.diagnosisCodes
+                                    ? getEntryDiagnoses(entry.diagnosisCodes)
+                                    : []} />
+                            {renderDetailComponenet(entry)}
                         </div>
                     ))}
                 </div>

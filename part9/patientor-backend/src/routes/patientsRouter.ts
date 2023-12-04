@@ -17,6 +17,11 @@ router.get('/:id', (req, res) => {
   }
 });
 
+router.post('/:id/patients', (req, res) => {
+  const id = req.params.id;
+  //TODO
+})
+
 router.post('/', (req, res) => {
   try {
     const newPatient = toNewPatient(req.body);

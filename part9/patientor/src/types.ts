@@ -35,7 +35,7 @@ interface OccupationalHealthCareEntry extends BaseEntry {
   employerName: string;
 }
 
-interface Discharge {
+export interface Discharge {
   date: string;
   criteria: string;
 }

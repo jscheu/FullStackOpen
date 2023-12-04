@@ -4,7 +4,7 @@ export interface Diagnosis {
   latin?: string;
 }
 
-interface SickLeave {
+export interface SickLeave {
   startDate: string;
   endDate: string;
 }
@@ -35,7 +35,7 @@ interface OccupationalHealthCareEntry extends BaseEntry {
   employerName: string;
 }
 
-interface Discharge {
+export interface Discharge {
   date: string;
   criteria: string;
 }
@@ -49,6 +49,17 @@ export type Entry =
   | HospitalEntry
   | OccupationalHealthCareEntry
   | HealthCheckEntry;
+
+export type NewEntry =
+  | Omit<HospitalEntry, 'id'>
+  | Omit<OccupationalHealthCareEntry, 'id'>
+  | Omit<HealthCheckEntry, 'id'>;
+
+export const EntryTypeStringLiterals: Entry['type'][] = [
+  'HealthCheck',
+  'Hospital',
+  'OccupationalHealthcare'
+];
 
 export enum Gender {
   Male = 'male',
