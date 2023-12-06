@@ -1,4 +1,3 @@
-import data from '../data/diagnoses';
 import {
   Diagnosis,
   Discharge,
@@ -209,9 +208,9 @@ const isDiagnosisCode = (param: unknown): param is Diagnosis['code'] => {
 const isDiagnosisCodeArray = (
   array: Array<unknown>
 ): array is Array<Diagnosis['code']> => {
-  array.forEach((code) => {
+  for (const code of array) {
     if (!isDiagnosisCode(code)) return false;
-  });
+  }
 
   return true;
 };
@@ -219,6 +218,26 @@ const isDiagnosisCodeArray = (
 const parseDiagnosisCodes = (object: unknown): Array<Diagnosis['code']> => {
   if (!isArray(object) || !isDiagnosisCodeArray(object)) {
     throw new Error('Incorrect diagnosis codes: ' + object);
+  }
+
+  return object;
+};
+
+const isSickLeave = (object: unknown): object is SickLeave => {
+  if (!object || typeof object !== 'object') return false;
+
+  if ('startDate' in object && 'endDate' in object) {
+    if (isString(object.startDate) && isString(object.endDate)) {
+      if (isDate(object.startDate) && isDate(object.endDate)) return true;
+    }
+  }
+
+  return false;
+};
+
+const parseSickLeave = (object: unknown): SickLeave => {
+  if (!isSickLeave(object)) {
+    throw new Error('Incorrect sick leave: ' + object);
   }
 
   return object;
@@ -255,6 +274,10 @@ export const toNewEntry = (object: unknown): NewEntry => {
       baseProperties.diagnosisCodes = parseDiagnosisCodes(
         object.diagnosisCodes
       );
+    }
+
+    if ('sickLeave' in object) {
+      baseProperties.sickLeave = parseSickLeave(object.sickLeave);
     }
 
     if (type === 'HealthCheck' && 'healCheckRating' in object) {

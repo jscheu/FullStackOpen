@@ -50,10 +50,21 @@ export type Entry =
   | OccupationalHealthCareEntry
   | HealthCheckEntry;
 
+export const EntryTypeStringLiterals = [
+  'HealthCheck',
+  'OccupationalHealthcare',
+  'Hospital'
+];
+
+export type NewEntry =
+  | Omit<HospitalEntry, 'id'>
+  | Omit<OccupationalHealthCareEntry, 'id'>
+  | Omit<HealthCheckEntry, 'id'>;
+
 export enum Gender {
-  Male = "male",
-  Female = "female",
-  Other = "other"
+  Male = 'male',
+  Female = 'female',
+  Other = 'other'
 }
 
 export interface Patient {
@@ -66,4 +77,4 @@ export interface Patient {
   entries: Array<Entry>;
 }
 
-export type PatientFormValues = Omit<Patient, "id" | "entries">;
+export type PatientFormValues = Omit<Patient, 'id' | 'entries'>;
