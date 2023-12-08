@@ -1,15 +1,12 @@
-import { HealthCheckRating } from "../../types";
+import { HealthCheckRating } from '../../types';
+import HealthRatingBar from '../HealthRatingBar';
 
 interface Props {
-    healthCheckRating: HealthCheckRating;
+  healthCheckRating: HealthCheckRating;
 }
 
 const HealtheCheckEntryDetail = ({ healthCheckRating }: Props) => {
-    return (
-        <div>
-            Health check rating: <strong>{healthCheckRating}</strong>
-        </div>
-    )
+  return <HealthRatingBar rating={healthCheckRating} showText={true} />;
 };
 
 export default HealtheCheckEntryDetail;

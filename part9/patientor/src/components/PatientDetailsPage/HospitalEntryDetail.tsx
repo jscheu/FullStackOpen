@@ -1,16 +1,24 @@
-import { Discharge } from "../../types";
+import { List, ListItem, Typography } from '@mui/material';
+import { Discharge } from '../../types';
 
 interface Props {
-    discharge: Discharge;
-};
+  discharge: Discharge;
+}
 
 const HospitalEntryDetail = ({ discharge }: Props) => {
-    return (
-        <div>
-            <div>Discharge date: {discharge.date}</div>
-            <div>Criteria: <em>{discharge.criteria}</em></div>
-        </div>
-    );
+  return (
+    <>
+      <Typography variant="subtitle1" gutterBottom>
+        Discharge
+      </Typography>
+      <List>
+        <ListItem key={0}>Date: {discharge.date}</ListItem>
+        <ListItem key={1}>
+          Criteria: <em>{discharge.criteria}</em>
+        </ListItem>
+      </List>
+    </>
+  );
 };
 
 export default HospitalEntryDetail;

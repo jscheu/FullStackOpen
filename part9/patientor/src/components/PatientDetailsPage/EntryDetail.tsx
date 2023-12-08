@@ -1,32 +1,44 @@
-import { Entry } from "../../types";
+import { Card, CardContent } from '@mui/material';
+import { Diagnosis, Entry } from '../../types';
+
+import BasicEntryDetail from './BasicEntryDetail';
+import HealtheCheckEntryDetail from './HealthCheckEntryDetail';
+import HospitalEntryDetail from './HospitalEntryDetail';
+import OccupationalHealthcareEntryDetail from './OccupationalHealthcareEntryDetail';
 
 interface Props {
-    entry: Entry;
-    
+  entry: Entry;
+  diagnoses: Diagnosis[];
 }
 
-const EntryDetail = ({ entry }: Props) => {
-
-    const assertNever = (x: never): never => {
-        throw new Error('Unexpected object: ' + x);
-    };
-
+const EntryDetail = ({ entry, diagnoses }: Props) => {
+  const renderDetailComponenet = (entry: Entry): React.ReactElement => {
     switch (entry.type) {
-        case 'HealthCheck':
-            return (
-                <div>health check</div>
-            );
-        case 'Hospital':
-            return (
-                <div>hospital</div>
-            );
-        case 'OccupationalHealthcare':
-            return (
-                <div>occupational healthcare</div>
-            );
-        default:
-            return assertNever(entry);
+      case 'HealthCheck':
+        return (
+          <HealtheCheckEntryDetail
+            healthCheckRating={entry.healthCheckRating}
+          />
+        );
+      case 'Hospital':
+        return <HospitalEntryDetail discharge={entry.discharge} />;
+      case 'OccupationalHealthcare':
+        return (
+          <OccupationalHealthcareEntryDetail
+            employerName={entry.employerName}
+          />
+        );
     }
+  };
+
+  return (
+    <Card variant="outlined" style={{ marginBottom: 12, marginTop: 12 }}>
+      <CardContent>
+        <BasicEntryDetail entry={entry} diagnoses={diagnoses} />
+        {renderDetailComponenet(entry)}
+      </CardContent>
+    </Card>
+  );
 };
 
 export default EntryDetail;

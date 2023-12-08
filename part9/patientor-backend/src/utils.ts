@@ -269,7 +269,6 @@ export const toNewEntry = (object: unknown): NewEntry => {
       specialist: parseSpecialist(object.specialist)
     };
 
-    //TODO optional properties
     if ('diagnosisCodes' in object) {
       baseProperties.diagnosisCodes = parseDiagnosisCodes(
         object.diagnosisCodes
@@ -280,11 +279,11 @@ export const toNewEntry = (object: unknown): NewEntry => {
       baseProperties.sickLeave = parseSickLeave(object.sickLeave);
     }
 
-    if (type === 'HealthCheck' && 'healCheckRating' in object) {
+    if (type === 'HealthCheck' && 'healthCheckRating' in object) {
       return {
         ...baseProperties,
         type,
-        healthCheckRating: parseHealthCheckRating(object.healCheckRating)
+        healthCheckRating: parseHealthCheckRating(object.healthCheckRating)
       };
     }
 

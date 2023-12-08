@@ -17,7 +17,7 @@ router.get('/:id', (req, res) => {
   }
 });
 
-router.post('/:id/patients', (req, res) => {
+router.post('/:id/entries', (req, res) => {
   const id = req.params.id;
   if (!id) {
     res.status(400).send('Missing id parameter');

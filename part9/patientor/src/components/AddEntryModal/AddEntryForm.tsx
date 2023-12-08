@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Card,
   CardContent,
@@ -12,16 +13,18 @@ import {
   Typography
 } from '@mui/material';
 import { SyntheticEvent, useState } from 'react';
-import { Entry, EntryTypeStringLiterals } from '../../types';
-import patientsService from '../../services/patients';
+import { Entry, EntryTypeStringLiterals, NewEntry } from '../../types';
 import DiagnosisCodes from './DiagnosisCodes';
 import SickLeave from './SickLeave';
 import EntryErrorMessage from './EntryErrorMessage';
+import { isDate, isHealthCheckRating, isNumber, toNewEntry } from '../../utils';
+import pateintsService from '../../services/patients';
+import { useParams } from 'react-router-dom';
 
 interface Props {
-  patientId: string;
   onCancel: () => void;
   onCreateEntry: (data: Entry) => void;
+  patientId?: string;
 }
 
 interface ErrorState {
@@ -50,9 +53,9 @@ const errorStateFalse: ErrorState = {
   sickLeaveEnd: false
 };
 
-const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
+const AddEntryForm = ({ onCancel, onCreateEntry, patientId }: Props) => {
   const [entryType, setEntryType] = useState<string>('');
-  const [date, setDate] = useState<string>('');
+  const [date, setDate] = useState<string | null>('');
   const [description, setDescription] = useState<string>('');
   const [specialist, setSpecialist] = useState<string>('');
 
@@ -65,10 +68,14 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
   const [sickLeaveStart, setSickLeaveStart] = useState<string>('');
   const [sickLeaveEnd, setSickLeaveEnd] = useState<string>('');
 
+  const [errorMessageTitle, setErrorMessageTitle] = useState<string>('');
+  const [errorMessageMain, setErrorMessageMain] = useState<string[]>([]);
   const [errorMessageType, setErrorMessageType] = useState<string>('');
   const [errorMessageRequired, setErrorMessageRequired] = useState<string>('');
   const [errorMessageOptional, setErrorMessageOptional] = useState<string>('');
   const [error, setError] = useState<ErrorState>(errorStateFalse);
+
+  const paramsId = useParams().id;
 
   const hasError = (e: ErrorState) => {
     return (
@@ -85,7 +92,7 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
     );
   };
 
-  const validateFields = (): ErrorState => {
+  const getMissingFields = (): ErrorState => {
     const e = { ...errorStateFalse };
 
     if (!date) e.date = true;
@@ -113,48 +120,25 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
     return e;
   };
 
-  const constructNewEntry = (): object => {
-    const baseProperties = {
-      type: entryType,
-      date,
-      description,
-      specialist,
-      sickLeave:
-        sickLeaveStart && sickLeaveEnd
-          ? { sickLeaveStart, sickLeaveEnd }
-          : undefined,
-      diagnosisCodes: diagnosisCodes ? diagnosisCodes : undefined
-    };
-
-    switch (entryType) {
-      case 'HealthCheck':
-        return {
-          ...baseProperties,
-          healthCheckRating: rating
-        };
-      case 'OccupationalHealthcare':
-        return {
-          ...baseProperties,
-          employerName
-        };
-      case 'Hospital':
-        return {
-          ...baseProperties,
-          discharge: { dischargeDate, criteria }
-        };
-      default:
-        throw new Error('Invalid entry type: ' + entryType);
-    }
-  };
-
   const addEntry = async (event: SyntheticEvent) => {
     event.preventDefault();
 
+    setErrorMessageTitle('');
     setErrorMessageType('');
     setErrorMessageRequired('');
     setErrorMessageOptional('');
 
-    const newError = validateFields();
+    const id = patientId ? patientId : paramsId;
+
+    if (!id) {
+      setErrorMessageTitle('Unable to create entry');
+      setErrorMessageMain(['Unknown patient id']);
+      return;
+    }
+
+    /* initially set errors to missing required fields */
+    /*-------------------------------------------------*/
+    const newError = getMissingFields();
 
     if (newError.entryType) setErrorMessageType('Please select entry type');
 
@@ -170,21 +154,89 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
       setErrorMessageRequired('All fields are required');
     }
 
-    if (newError.sickLeaveStart || newError.sickLeaveEnd) {
-      setErrorMessageOptional('Sick leave requires start date and end date');
+    if (newError.sickLeaveStart)
+      setErrorMessageOptional('Sick leave start date required');
+    if (newError.sickLeaveEnd)
+      setErrorMessageOptional('Sick leave end date required');
+
+    /* validate user inputs and construct array of error messages */
+    /*------------------------------------------------------------*/
+
+    const newErrorMessage: string[] = [];
+
+    if (date && !isDate(date)) {
+      newErrorMessage.push('Incorrect date format');
+      newError.date = true;
+    }
+
+    if (entryType) {
+      switch (entryType) {
+        case 'HealthCheck':
+          if (
+            !newError.rating &&
+            (!isNumber(Number.parseInt(rating)) ||
+              !isHealthCheckRating(Number.parseInt(rating)))
+          ) {
+            newErrorMessage.push('Incorrect HealthCheck rating');
+            newError.rating = true;
+          }
+          break;
+        case 'Hospital':
+          if (!newError.dischargeDate && !isDate(dischargeDate)) {
+            newErrorMessage.push('Incorrect discharge date format');
+            newError.dischargeDate = true;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (sickLeaveStart && !isDate(sickLeaveStart)) {
+      newErrorMessage.push('Incorrect sick leave start date');
+      newError.sickLeaveStart = true;
+    }
+
+    if (sickLeaveEnd && !isDate(sickLeaveEnd)) {
+      newErrorMessage.push('Incorrect sick leave end date');
+      newError.sickLeaveEnd = true;
     }
 
     setError(newError);
+    setErrorMessageMain(newErrorMessage);
 
+    /* attempt to send if no errors */
+    /*------------------------------*/
     if (!hasError(newError)) {
+      const sickLeave =
+        sickLeaveStart && sickLeaveEnd
+          ? { startDate: sickLeaveStart, endDate: sickLeaveEnd }
+          : null;
+
+      const discharge =
+        dischargeDate && criteria ? { date: dischargeDate, criteria } : null;
       try {
-        const values = constructNewEntry();
-        const newEntry = await patientsService.addEntry(patientId, values);
-        onCreateEntry(newEntry);
-      } catch (error) {
-        //
+        const newEntry: NewEntry = toNewEntry({
+          type: entryType,
+          date,
+          description,
+          specialist,
+          diagnosisCodes,
+          sickLeave,
+          healthCheckRating: Number.parseInt(rating),
+          employerName,
+          discharge
+        });
+
+        const createdEntry = await pateintsService.addEntry(id, newEntry);
+        onCreateEntry(createdEntry);
+      } catch (e) {
+        setErrorMessageTitle('An unexpected error occurred');
+        if (e instanceof Error) {
+          setErrorMessageMain([e.message]);
+        }
       }
-    }
+    } else setErrorMessageTitle('Please correct the following errors');
   };
 
   const renderTypeDetails = () => {
@@ -193,6 +245,8 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
         return (
           <TextField
             label="HealthCheck Rating"
+            autoComplete="healthcheck rating"
+            placeholder="Number 0 - 3"
             fullWidth
             value={rating}
             error={error.rating}
@@ -203,6 +257,7 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
         return (
           <TextField
             label="Employer Name"
+            autoComplete="employer name"
             fullWidth
             value={employerName}
             error={error.employerName}
@@ -218,7 +273,11 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
             </Typography>
             <TextField
               label="Date"
-              placeholder="YYYY-MM-DD"
+              type="date"
+              autoComplete="discharge date"
+              InputLabelProps={{
+                shrink: true
+              }}
               fullWidth
               value={dischargeDate}
               error={error.dischargeDate}
@@ -226,6 +285,7 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
             />
             <TextField
               label="Criteria"
+              autoComplete="criteria"
               fullWidth
               value={criteria}
               error={error.criteria}
@@ -239,6 +299,21 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
   };
   return (
     <div>
+      {(hasError(error) || errorMessageMain.length > 0) && (
+        <>
+          <Alert severity="error">
+            <Typography variant="subtitle1" gutterBottom>
+              {errorMessageTitle}
+            </Typography>
+            <ul>
+              {errorMessageMain.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          </Alert>
+          <Divider style={{ marginBottom: 12 }} />
+        </>
+      )}
       <form onSubmit={addEntry}>
         {errorMessageType && <EntryErrorMessage message={errorMessageType} />}
         <FormControl fullWidth>
@@ -268,7 +343,11 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
               )}
               <TextField
                 label="Date"
-                placeholder="YYYY-MM-DD"
+                type="date"
+                autoComplete="date"
+                InputLabelProps={{
+                  shrink: true
+                }}
                 fullWidth
                 value={date}
                 error={error.date}
@@ -276,6 +355,7 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
               />
               <TextField
                 label="Description"
+                autoComplete="description"
                 fullWidth
                 value={description}
                 error={error.description}
@@ -283,6 +363,7 @@ const AddEntryForm = ({ patientId, onCancel, onCreateEntry }: Props) => {
               />
               <TextField
                 label="Specialist"
+                autoComplete="specialist"
                 fullWidth
                 value={specialist}
                 error={error.specialist}

@@ -35,9 +35,14 @@ const SickLeave = ({
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <TextField
+            label="Start"
+            type="date"
+            autoComplete="start date"
             fullWidth
-            label="Start Date"
             placeholder="YYYY-MM-DD"
+            InputLabelProps={{
+              shrink: true
+            }}
             value={startDate}
             error={startDateError}
             onChange={({ target }) => handleStartDateChange(target.value)}
@@ -45,9 +50,14 @@ const SickLeave = ({
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
+            label="End"
+            type="date"
+            autoComplete="end date"
             fullWidth
-            label="End Date"
             placeholder="YYYY-MM-DD"
+            InputLabelProps={{
+              shrink: true
+            }}
             value={endDate}
             error={endDateError}
             onChange={({ target }) => handleEndDateChange(target.value)}

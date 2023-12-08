@@ -1,12 +1,12 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-import patients from '../../services/patients';
+import patientService from '../../services/patients';
 import { Entry, Patient } from '../../types';
 
 import PatientInfo from './PatientInfo';
 import EntriesList from './EntriesList';
-import { Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import AddEntryModal from '../AddEntryModal';
 
 const PatientDetailsPage = () => {
@@ -28,11 +28,26 @@ const PatientDetailsPage = () => {
   const fetchPatient = async (patientId: string): Promise<void> => {
     setLoading(true);
     try {
-      setPatient(await patients.getPatientById(patientId));
+      setPatient(await patientService.getPatientById(patientId));
     } catch (error) {
       setErrorMessage(`Something went wrong: ${error}`);
     }
     setLoading(false);
+  };
+
+  const onCreateEntry = (newEntry: Entry) => {
+    closeModal();
+
+    if (patient) {
+      const updatedEntries = patient?.entries.concat(newEntry);
+
+      const updatedPatient = {
+        ...patient,
+        entries: updatedEntries
+      };
+
+      setPatient(updatedPatient);
+    }
   };
 
   useEffect(() => {
@@ -42,22 +57,27 @@ const PatientDetailsPage = () => {
   }, [id]);
 
   return (
-    <div>
+    <div className="App">
       {errorMessage && <h2>{errorMessage}</h2>}
       {loading && <h2>Loading patient info...</h2>}
       {patient && <PatientInfo patient={patient} />}
       {patient && (
-        <Button variant="contained" onClick={() => openModal()}>
-          Add Entry
-        </Button>
+        <>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Typography variant="h5" gutterBottom>
+              Entries
+            </Typography>
+            <Button variant="contained" onClick={() => openModal()}>
+              Add Entry
+            </Button>
+          </Box>
+        </>
       )}
       {patient && (
         <AddEntryModal
           modalOpen={modalOpen}
           onClose={closeModal}
-          onSubmit={function (): Entry {
-            throw new Error('Function not implemented.');
-          }}
+          onCreateEntry={onCreateEntry}
         />
       )}
       {patient && <EntriesList entries={patient.entries} />}

@@ -4,7 +4,7 @@ export interface Diagnosis {
   latin?: string;
 }
 
-interface SickLeave {
+export interface SickLeave {
   startDate: string;
   endDate: string;
 }

@@ -1,88 +1,84 @@
 import {
-  Button,
+  Checkbox,
   FormControl,
-  IconButton,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
+  InputLabel,
   ListItemText,
-  TextField,
-  Typography
+  MenuItem,
+  Select,
+  SelectChangeEvent
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from 'react';
 import EntryErrorMessage from './EntryErrorMessage';
+import diagnosisService from '../../services/diagnoses';
+import { Diagnosis } from '../../types';
 
 interface Props {
   onDiagnosisCodesChange: (codes: string[]) => void;
 }
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250
+    }
+  }
+};
+
 const DiagnosisCodes = ({ onDiagnosisCodesChange }: Props) => {
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
   const [codes, setCodes] = useState<string[]>([]);
-  const [code, setCode] = useState<string>('');
-  const [error, setError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const addCode = () => {
-    if (!codes.includes(code)) {
-      setCodes(codes.concat(code));
-      setCode('');
-      setErrorMessage('');
-      setError(false);
-    } else {
-      setErrorMessage('Cannot add duplicate codes');
-      setError(true);
-    }
-  };
-
-  const removeCode = (codeToRemove: string) => {
-    setCodes(codes.filter((c) => c !== codeToRemove));
+  const handleChange = (event: SelectChangeEvent<typeof codes>) => {
+    const {
+      target: { value }
+    } = event;
+    setCodes(typeof value === 'string' ? value.split(',') : value);
   };
 
   useEffect(() => {
     onDiagnosisCodesChange(codes);
   }, [codes, onDiagnosisCodesChange]);
 
+  useEffect(() => {
+    const fetchDiagnoses = async () => {
+      try {
+        setDiagnoses(await diagnosisService.getDiagnoses());
+        setErrorMessage('');
+      } catch (e) {
+        setErrorMessage('Unable to load diagnosis codes');
+      }
+    };
+    fetchDiagnoses();
+  }, []);
+
   return (
     <>
+      {errorMessage && <EntryErrorMessage message={errorMessage} />}
       <FormControl fullWidth>
-        <Typography variant="subtitle1" gutterBottom>
+        <InputLabel id="diagnosis-code-multiple-checkbox-label">
           Diagnosis Codes
-        </Typography>
-        {errorMessage && <EntryErrorMessage message={errorMessage} />}
-        {codes.length > 0 ? (
-          <List>
-            {codes.map((c, index) => (
-              <ListItem key={index}>
-                <ListItemText primary={c} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => removeCode(c)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
-          </List>
-        ) : (
-          <Typography variant="subtitle2" gutterBottom>
-            No diagnosis codes added
-          </Typography>
-        )}
-        <TextField
-          label="Add Code"
-          fullWidth={true}
-          value={code}
-          error={error}
-          onChange={({ target }) => setCode(target.value)}
-        />
+        </InputLabel>
+        <Select
+          labelId="diagnosis-code-multiple-checkbox-label"
+          id="diagnosis-code-multiple-checkbox"
+          multiple
+          value={codes}
+          onChange={handleChange}
+          renderValue={(selected) => selected.join(', ')}
+          MenuProps={MenuProps}
+        >
+          {diagnoses.map((diagnosis, index) => (
+            <MenuItem key={index} value={diagnosis.code}>
+              <Checkbox checked={codes.indexOf(diagnosis.code) > -1} />
+              <ListItemText primary={`${diagnosis.code} ${diagnosis.name}`} />
+            </MenuItem>
+          ))}
+        </Select>
       </FormControl>
-      <Button variant="contained" onClick={addCode}>
-        Add Code
-      </Button>
     </>
   );
 };
